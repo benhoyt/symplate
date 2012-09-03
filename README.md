@@ -1,10 +1,166 @@
 Symplate, the Simple pYthon teMPLATE renderer
 =============================================
 
-Usage
------
+Symplate is the simplest, fastest, and most powerful Python templating
+language. How's that for a sales pitch?
 
-* TODO
+Seriously though, when I got frustrated with the complexities of
+[Cheetah](http://www.cheetahtemplate.org/), I started wondering just how
+simple a templating language could be.
+
+Could you just write templates in straight Python? Not as bad as you'd think,
+but pretty cumbersome: in templates, you really want string output to be the
+default, whereas in Python, code is the default, and """strings have to wrapped
+in quotes""". Plus, you don't get auto-escaping.
+
+So I ended up with an ultra-simple Symplate-to-Python compilation process:
+
+* `text` becomes `write('text')`
+* `{{ expr }}` becomes `write(filter(expr))`
+* `{% code %}` becomes `code` at the correct indentation level
+* indentation increases when a code line ends with a `:`, as in `{% for x in lst: %}`
+* indentation decreases when you say `{% end %}`
+
+That's about all there is to it. All the rest is detail or syntactic sugar.
+
+
+Hats off to bottle.py
+---------------------
+
+Literally a few days after I wrote a draft version of Symplate, I saw a
+reference to [Bottle](http://bottlepy.org) on Hacker News, and discovered the
+author of that had almost exactly the same idea (no doubt some time earlier).
+I thought of it independently, honest! Perhaps a good argument against
+software patents...
+
+Actually, one thing I stole from Bottle was its use of `!` to mean raw output.
+It seemed cleaner than my initial idea of passing `raw=True` as a parameter to
+the filter, as in `{{ foo, raw=True }}`.
+
+And there are many other good templating languages available for Python now.
+Not least of which is Mako, whose philosophy is very similar to Symplate's:
+*Python is a great scripting language. Don't reinvent the wheel... your
+templates can handle it!*
+
+
+Basic usage
+-----------
+
+Let's start with a simple example that uses more or less all the features of
+Symplate. Our main template is `blog.symp`:
+
+    {% template entries, title='My Blog' %}
+    {% include 'inc/header', title %}
+    <h1>This is {{ title }}</h1>
+    {% for entry in entries: %}
+        <h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
+        {{ !entry.html_body }}
+    {% end %}
+    </ul>
+    {% include 'inc/footer' %}
+
+This is Python, so everything's explicit. We explicitly specify the parameters
+this template takes in the `{% template ... %}` line, including the default
+parameter `title`. The arguments passed to included sub-templates are
+specified explicitly (no yucky setting of globals for includes).
+
+Note that `entry.html_body` contains pre-rendered HTML, so this expression is
+prefixed with `!`, meaning output a raw, unescaped string.
+
+Then `inc/header.symp` looks like this:
+
+    {% template title %}
+    <html>
+    <head>
+        <title>{{ title }}</title>
+    </head>
+    <body>
+
+And `inc/footer.symp` is of course:
+
+    {% template %}
+    </body>
+    </html>
+
+To compile and render the main blog template in one fell swoop, set `entries`
+to a list of blog entries with the `url`, `title`, and `html_body` attributes,
+and you're away:
+
+    output = symplate.render('blog', entries, title="Ben's Blog")
+
+
+Non-default Rendererer
+======================
+
+Calling `symplate.render()` directly uses the default `symplate.Renderer()`
+instance. You may well want to use your own to specify a different template or
+output directory, or to turn on checking of template file mtimes for
+debugging. For example:
+
+    debug = os.getenv('BLOG_DEBUG') == 'true'
+    renderer = symplate.Renderer(output_dir='out', check_mtime=debug)
+
+    def homepage():
+        entries = load_blog_entries()
+        return renderer.render('blog', entries, title="Ben's Blog")
+
+See `Renderer.__init__`'s docstring or type `help(symplate.Renderer)` at a
+Python prompt for more info.
+
+
+Compiled Python output
+======================
+
+Symplate is a [leaky abstraction](http://www.joelonsoftware.com/articles/LeakyAbstractions.html),
+but is somewhat proud of that fact. I already know Python well, so my goal was
+to be as close to Python as possible -- I don't want to learn another language
+just to produce some HTML.
+
+In any case, you're encouraged to look the compiled Python output produced by
+the Symplate compiler. You might be surprised how clean it looks. Symplate
+tries to make the compiled template look much like it would if you were
+writing it by hand -- for example, short strings are output as `'shortstr'`,
+and long, multi-line strings as """long, multi-line strings""".
+
+The `blog.symp` example above produces this in `blog.py`:
+
+    TODO
+
+Basic Symplate syntax errors like mismatched `{%`'s are raised as
+`symplate.Error`s when the template is compiled. However, most Python
+expressions are copied directly to the Python output, so you only get a Python
+SyntaxError when the compiled template is imported at render time. (Yes, this
+is a minor drawback of Symplate's KISS approach.)
+
+
+Directives
+==========
+
+The only directives or keywords in Symplate are `template`, `include`, and
+`end`. Oh, and "colon at the end of a code line".
+
+`{% template [args] %}` must appear at the start of a template before any
+output. `args` is the argument specification including positional and
+keyword/default arguments, just as if it were a function definition. In fact,
+it is -- `{% template [args] %}` gets compiled to:
+
+    def render(_renderer, args):
+        ...
+
+`{% include name[, args] %}` renders the template with the given name and
+arguments and writes the result to the output. This is exactly equivalent to
+the more clumsy:
+
+    {{ !_renderer.render(name, args) }}
+
+`{% end [...] %}` ends a code indentation block. All it does is reduce the
+indentation level in the compiled Python output. The `...` is optional, and
+acts as a comment, so you can say `{% end for %}` or `{% end if %}` if you
+like.
+
+A `:` (colon) at the end of a code block starts a code indentation block, just
+like in Python. So you've got to match your `{% ...: %}`s with your
+`{% end %}`s.
 
 
 Filters
@@ -33,14 +189,6 @@ Would produce the output:
 To output a raw or pre-escaped string, prefix the output expression with `!`,
 For example `{{ !html_block }}` will write `html_block` directly to the
 output, meaning it must be a unicode string or a pure-ASCII byte string.
-
-Note that the `{% include ... %}` directive:
-
-    {% include 'template.symp', arg1=value1, arg2=value2 %}
-
-is just a less crufty way of spelling:
-
-    {{ !symplate.render('template.symp', arg1=value1, arg2=value2) }}
 
 ### Setting the filter
 
@@ -112,13 +260,15 @@ after the colon that begins an indentation block:
     {% for element in lst: # THIS WON'T WORK %}
 
 
-Outputting a literal {{
------------------------
+Outputting a literal {{, }}, {%, or %}
+--------------------------------------
 
-You can't include {{ or }} anywhere inside an output expression, and you can't
-include {% or %} anywhere inside a code block. To output a literal {{, }}, {%,
-or %}, use Python's string literal concatenation so the two {'s are separated.
-For example, this will output a single {{:
+You can't include `{{`, `}}`, `{%`, or `%}` anywhere inside an output
+expression or code block. To output one of these two-character strings
+literally, use Python's string literal concatenation so that the two special
+characters are separated.
+
+For example, this will output a single `{{`:
 
     {{ '{' '{' }}
 
@@ -131,19 +281,13 @@ about templates), you could shortcut and name it at the top of your template:
     {{LB}}three{{RB}}
 
 
-Default Renderer and customizing
---------------------------------
-
-* TODO
-
-
 Command line usage
 ------------------
 
-Symplate (symplate.py) can also be run as a command-line script. This is
-currently only useful for pre-compiling one or more templates, which might be
-useful in a constrained deployment environment where you can only upload
-Python code, and not write to the file system.
+`symplate.py` can also be run as a command-line script. This is currently only
+useful for pre-compiling one or more templates, which might be useful in a
+constrained deployment environment where you can only upload Python code, and
+not write to the file system.
 
 Simply specify your template directory and output directory and it'll compile
 all your templates to Python code. Straight from the command line help:

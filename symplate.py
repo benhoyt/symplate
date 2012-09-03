@@ -5,7 +5,6 @@ See README.md or https://github.com/benhoyt/symplate for documentation.
 """
 
 # TODO: multi-line {% ... %} blocks
-# TODO: document, comment
 # TODO: simplify os.walk/relpath stuff in _main?
 # TODO: unit tests, check on 2.5
 # TODO: add setup.py, etc
@@ -46,9 +45,9 @@ class Error(Exception):
         return 'symplate.Error(%r, %d, %r)' % (self.msg, self.line_num, text)
 
 def html_filter(obj):
-    """Default output filter. Escapes special HTML and XML characters & < > '
-    and " in obj. If obj is None, return empty string. If obj is not a unicode
-    string, convert it to a unicode string first.
+    """Default output filter. Escapes special HTML/XML characters in obj. If
+    obj is None, return empty string. If obj is not a unicode string, convert
+    it to a unicode string first.
     """
     if obj is None:
         return u''
@@ -100,14 +99,7 @@ class Renderer(object):
     def get_default_filter(self, filename):
         """Return Python expression string to use as default filter for given
         template filename. Override this in subclasses to do fancy stuff like
-        determine filter based on file extension, for example:
-
-            def get_default_filter(self, filename):
-                base, ext = os.path.splitext(filename)
-                if ext.lower() == '.js':
-                    return 'json.dumps'
-                else:
-                    return 'symplate.html_filter'
+        determine filter based on file extension.
         """
         return 'symplate.html_filter'
 
@@ -123,8 +115,8 @@ class Renderer(object):
             if not string:
                 return
             if len(string) > 50 and '\n' in string:
-                # put long text blocks inside raw """ strings (being sure to
-                # allow literal triple quotes to work
+                # put long, multi-line text blocks inside raw """ strings
+                # (but be sure to allow literal triple quotes to work
                 chunks = string.split('"""')
                 write('%s_write(' % indent)
                 for i, chunk in enumerate(chunks):
@@ -287,7 +279,7 @@ def render(renderer, %s):
             f.write(py_source.encode('utf-8'))
 
     def render(self, name, *args, **kwargs):
-        """Render given template with given position and keyword args."""
+        """Render given template with given positional and keyword args."""
         if self.modify_path:
             path_dir = os.path.join(self.output_dir, '..')
             if path_dir not in sys.path:
@@ -295,7 +287,7 @@ def render(renderer, %s):
 
         names = self._get_filenames(name)
         if self.check_mtime:
-            # Compile the template source to .py if it has changed
+            # compile the template source to .py if it has changed
             try:
                 py_mtime = os.path.getmtime(names['py'])
             except OSError:
@@ -303,8 +295,8 @@ def render(renderer, %s):
             if os.path.getmtime(names['symplate']) > py_mtime:
                 self.compile(name)
 
-        # Try to import the compiled template. If it doesn't exist (it's never
-        # been compiled), compile it and then re-import.
+        # try to import the compiled template; if it doesn't exist (it's never
+        # been compiled), compile it and then re-import
         try:
             module = __import__(names['module'], fromlist=[names['import']])
         except ImportError:
