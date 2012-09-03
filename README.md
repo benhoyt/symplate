@@ -1,8 +1,8 @@
 Symplate, the Simple pYthon teMPLATE renderer
 =============================================
 
-Symplate is the simplest, fastest, and most powerful Python templating
-language. How's that for a sales pitch?
+Symplate is the simplest and fastest Python templating language. How's that
+for a sales pitch?
 
 Seriously though, when I got frustrated with the complexities of
 [Cheetah](http://www.cheetahtemplate.org/), I started wondering just how
@@ -90,39 +90,34 @@ and you're away:
 
     output = symplate.render('blog', entries, title="Ben's Blog")
 
-
-Non-default Rendererer
-----------------------
-
 Calling `symplate.render()` directly uses the default `symplate.Renderer()`
 instance. You may well want to use your own to specify a different template or
 output directory, or to turn on checking of template file mtimes for
 debugging. For example:
 
-    debug = os.getenv('BLOG_DEBUG') == 'true'
-    renderer = symplate.Renderer(output_dir='out', check_mtime=debug)
+    renderer = symplate.Renderer(output_dir='out', check_mtime=DEBUG)
 
     def homepage():
         entries = load_blog_entries()
         return renderer.render('blog', entries, title="Ben's Blog")
 
 See `Renderer.__init__`'s docstring or type `help(symplate.Renderer)` at a
-Python prompt for more info.
+Python prompt for docs on the exact arguments for `Renderer()`.
 
 
 Compiled Python output
 ----------------------
 
 Symplate is a [leaky abstraction](http://www.joelonsoftware.com/articles/LeakyAbstractions.html),
-but is somewhat proud of that fact. I already know Python well, so my goal was
+but is somewhat proud of that fact. I already knew Python well, so my goal was
 to be as close to Python as possible -- I don't want to learn another language
 just to produce some HTML.
 
-In any case, you're encouraged to look the compiled Python output produced by
-the Symplate compiler. You might be surprised how clean it looks. Symplate
+In any case, you're encouraged to look at the compiled Python output produced
+by the Symplate compiler. You might be surprised how clean it looks. Symplate
 tries to make the compiled template look much like it would if you were
 writing it by hand -- for example, short strings are output as `'shortstr'`,
-and long, multi-line strings as """long, multi-line strings""".
+and long, multi-line strings as `"""long, multi-line strings"""`.
 
 The `blog.symp` example above produces this in `blog.py`:
 
@@ -166,19 +161,15 @@ The only directives or keywords in Symplate are `template`, `include`, and
 `{% template [args] %}` must appear at the start of a template before any
 output. `args` is the argument specification including positional and
 keyword/default arguments, just as if it were a function definition. In fact,
-it is -- `{% template [args] %}` gets compiled to:
-
-    def render(_renderer, args):
-        ...
+it is -- `{% template [args] %}` gets compiled to
+`def render(_renderer, args): ...`.
 
 If you need to import other modules, do so at the top of your template, above
 the `template` directive (just like in Python you import before writing code).
 
 `{% include name[, args] %}` renders the template with the given name and
 arguments and writes the result to the output. This is exactly equivalent to
-the more clumsy:
-
-    {{ !_renderer.render(name, args) }}
+the more clumsy `{{ !_renderer.render(name, args) }}`.
 
 `{% end [...] %}` ends a code indentation block. All it does is reduce the
 indentation level in the compiled Python output. The `...` is optional, and
@@ -186,8 +177,7 @@ acts as a comment, so you can say `{% end for %}` or `{% end if %}` if you
 like.
 
 A `:` (colon) at the end of a code block starts a code indentation block, just
-like in Python. So you've got to match your `{% ...: %}`s with your
-`{% end %}`s.
+like in Python.
 
 
 Filters
