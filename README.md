@@ -8,20 +8,21 @@ Seriously though, when I got frustrated with the complexities of
 [Cheetah](http://www.cheetahtemplate.org/), I started wondering just how
 simple a templating language could be.
 
-Could you just write templates in straight Python? Not as bad as you'd think,
-but pretty cumbersome: in templates, you really want string output to be the
-default, whereas in Python, code is the default, and """strings have to wrapped
-in quotes""". Plus, you don't get auto-escaping.
+Could you just write templates in straight Python? It's not as bad as you'd
+think, but it's still pretty cumbersome. In templates, you really want string
+output to be the default, whereas in Python, code is the default, and strings
+have to be wrapped in quotes. Plus, you don't get auto-escaping.
 
-So I ended up with an ultra-simple Symplate-to-Python compilation process:
+So I ended up with a very direct Symplate-to-Python compilation process:
 
 * `text` becomes `_write('text')`
 * `{{ expr }}` becomes `_write(_filter(expr))`
 * `{% code %}` becomes `code` at the correct indentation level
-* indentation increases when a code line ends with a `:`, as in `{% for x in lst: %}`
+* indentation increases when a code line ends with a colon, as in
+  `{% for x in lst: %}`
 * indentation decreases when you say `{% end %}`
 
-That's about all there is to it. All the rest is detail or syntactic sugar.
+That's about all there is to it. All the rest is detail and syntactic sugar.
 
 
 Hats off to bottle.py
@@ -33,9 +34,9 @@ author of that had almost exactly the same idea (no doubt some time earlier).
 I thought of it independently, honest! Perhaps a good argument against
 software patents...
 
-Actually, one thing I stole from Bottle was its use of `!` to mean raw output.
-It seemed cleaner than my initial idea of passing `raw=True` as a parameter to
-the filter, as in `{{ foo, raw=True }}`.
+However, after seeing Bottle, one thing I did steal was its use of `!` to
+denote raw output. It seemed cleaner than my initial idea of passing
+`raw=True` as a parameter to the filter, as in `{{ foo, raw=True }}`.
 
 And there are many other good templating languages available for Python now.
 Not least of which is Mako, whose philosophy is very similar to Symplate's:
@@ -91,7 +92,7 @@ and you're away:
 
 
 Non-default Rendererer
-======================
+----------------------
 
 Calling `symplate.render()` directly uses the default `symplate.Renderer()`
 instance. You may well want to use your own to specify a different template or
@@ -110,7 +111,7 @@ Python prompt for more info.
 
 
 Compiled Python output
-======================
+----------------------
 
 Symplate is a [leaky abstraction](http://www.joelonsoftware.com/articles/LeakyAbstractions.html),
 but is somewhat proud of that fact. I already know Python well, so my goal was
@@ -157,7 +158,7 @@ is a minor drawback of Symplate's KISS approach.)
 
 
 Directives
-==========
+----------
 
 The only directives or keywords in Symplate are `template`, `include`, and
 `end`. Oh, and "colon at the end of a code line".
@@ -169,6 +170,11 @@ it is -- `{% template [args] %}` gets compiled to:
 
     def render(_renderer, args):
         ...
+
+If you need to import other modules, do so at the top of your template, above
+the `template` directive (just like in Python you import before writing code).
+You can also define your own functions or classes in templates -- again, just
+put them above the main `template` directive.
 
 `{% include name[, args] %}` renders the template with the given name and
 arguments and writes the result to the output. This is exactly equivalent to
