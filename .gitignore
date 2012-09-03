@@ -1,2 +1,4 @@
 *.pyc
 examples/symplouts
+tests/symplates
+tests/symplouts

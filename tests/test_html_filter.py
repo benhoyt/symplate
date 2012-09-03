@@ -1,4 +1,4 @@
-# coding: utf-8
+"""Unit tests for html_filter."""
 
 import unittest
 
@@ -20,7 +20,7 @@ class TestHtmlFilter(unittest.TestCase):
     def test_non_string(self):
         self.assertEqual(html_filter(1234), u'1234')
 
-    def test_specials(self):
+    def test_special_chars(self):
         self.assertEqual(html_filter('foo &<>\'" bar'), 'foo &amp;&lt;&gt;&#39;&quot; bar')
 
     def test_non_unicodeable(self):
