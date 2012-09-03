@@ -1,6 +1,6 @@
 """Symplate, the Simple pYthon teMPLATE renderer.
 
-Please see README.md for full documentation.
+See README.md or https://github.com/benhoyt/symplate for documentation.
 
 """
 
@@ -9,6 +9,7 @@ Please see README.md for full documentation.
 # TODO: unit tests, check on 2.5
 # TODO: add setup.py, etc
 # TODO: investigate inheritance in style of bottle.py?
+# TODO: Python 3 support?
 
 from __future__ import with_statement
 
