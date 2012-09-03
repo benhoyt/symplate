@@ -190,7 +190,7 @@ which converts non-string objects to unicode and escapes HTML/XML special
 characters. It escapes `&`, `<`, `>`, `'`, and `"`, so it's good for both HTML
 content as well as attribute values.
 
-For example, `render('foo.tmpl', thing='A & B', title="Symplate's simple")` on
+For example, `render('test', thing='A & B', title="Symplate's simple")` on
 this template:
 
     Thing is <b>{{ thing }}</b>.
@@ -203,7 +203,7 @@ Would produce the output:
 
 ### Outputting raw strings
 
-To output a raw or pre-escaped string, prefix the output expression with `!`,
+To output a raw or pre-escaped string, prefix the output expression with `!`.
 For example `{{ !html_block }}` will write `html_block` directly to the
 output, meaning it must be a unicode string or a pure-ASCII byte string.
 
@@ -212,7 +212,7 @@ output, meaning it must be a unicode string or a pure-ASCII byte string.
 To set the current filter, just say `{% _filter = filter_function %}`.
 `_filter` is simply a local variable in the compiled template, and it should
 be set to a function which takes a single argument and returns a unicode
-string.
+or ASCII string.
 
 The expression inside a `{{ ... }}` is passed directly to the current
 `_filter` function, so you can pass other arguments to custom filters. For
@@ -235,8 +235,7 @@ things if you want. By default it simply returns the string
             self.preamble += 'import json\n'
 
         def get_default_filter(self, filename):
-            base, ext = os.path.splitext(filename)
-            if ext.lower() == '.js':
+            if filename.lower().endswith('.js.symp'):
                 return 'json.dumps'
             else:
                 return 'symplate.html_filter'
