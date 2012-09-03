@@ -15,8 +15,8 @@ in quotes""". Plus, you don't get auto-escaping.
 
 So I ended up with an ultra-simple Symplate-to-Python compilation process:
 
-* `text` becomes `write('text')`
-* `{{ expr }}` becomes `write(filter(expr))`
+* `text` becomes `_write('text')`
+* `{{ expr }}` becomes `_write(_filter(expr))`
 * `{% code %}` becomes `code` at the correct indentation level
 * indentation increases when a code line ends with a `:`, as in `{% for x in lst: %}`
 * indentation decreases when you say `{% end %}`
@@ -72,6 +72,7 @@ Then `inc/header.symp` looks like this:
     {% template title %}
     <html>
     <head>
+        <meta charset="UTF-8" />
         <title>{{ title }}</title>
     </head>
     <body>
@@ -124,7 +125,29 @@ and long, multi-line strings as """long, multi-line strings""".
 
 The `blog.symp` example above produces this in `blog.py`:
 
-    TODO
+    import symplate
+
+    def render(_renderer, entries, title='My Blog'):
+        _output = []
+        _write = _output.append
+        _filter = symplate.html_filter
+
+        _write(_renderer.render('inc/header', title))
+        _write(u'<h1>This is ')
+        _write(_filter(title))
+        _write(u'</h1>\n')
+        for entry in entries:
+            _write(u'    <h2><a href="')
+            _write(_filter(entry.url))
+            _write(u'">')
+            _write(_filter(entry.title.title()))
+            _write(u'</a></h2>\n    ')
+            _write(entry.html_body)
+            _write(u'\n')
+        _write(u'</ul>\n')
+        _write(_renderer.render('inc/footer'))
+
+        return u''.join(_output)
 
 Basic Symplate syntax errors like mismatched `{%`'s are raised as
 `symplate.Error`s when the template is compiled. However, most Python
@@ -192,17 +215,16 @@ output, meaning it must be a unicode string or a pure-ASCII byte string.
 
 ### Setting the filter
 
-TODO: should filt be something else to avoid potential local naming conflicts?
+To set the current filter, just say `{% _filter = filter_function %}`.
+`_filter` is simply a local variable in the compiled template, and it should
+be set to a function which takes a single argument and returns a unicode
+string.
 
-To set the current filter, just say `{% filt = filter_function %}`. `filt` is
-simply a local variable in the compiled template, so don't use is for other
-things. `filt` should be a function which takes a single argument and returns
-a unicode string.
+The expression inside a `{{ ... }}` is passed directly to the current
+`_filter` function, so you can pass other arguments to custom filters. For
+example:
 
-The expression inside a `{{ ... }}` is passed directly to the current `filt`
-function, so you can pass other arguments to custom filters. For example:
-
-    {% filt = json.dumps %}
+    {% _filter = json.dumps %}
     {{ obj, indent=4, sort_keys=True }}
 
 ### Changing the default filter

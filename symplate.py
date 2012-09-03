@@ -149,7 +149,7 @@ class Renderer(object):
                 if expr:
                     write('%s_write(%s)\n' % (indent, expr))
             elif expr:
-                write('%s_write(filt(%s))\n' % (indent, expr))
+                write('%s_write(_filter(%s))\n' % (indent, expr))
             add_string(string)
 
         return output
@@ -190,10 +190,10 @@ class Renderer(object):
             if code.startswith(('template ', 'template\t')) or \
                code == 'template':
                 write("""
-def render(renderer, %s):
+def render(_renderer, %s):
     _output = []
     _write = _output.append
-    filt = %s
+    _filter = %s
 
 """ % (code[9:], self.get_default_filter(filename)))
                 if indent:
@@ -203,7 +203,7 @@ def render(renderer, %s):
                 inside_template = True
 
             elif code.startswith(('include ', 'include\t')):
-                write('%s_write(renderer.render(%s))\n' % (indent, code[8:]))
+                write('%s_write(_renderer.render(%s))\n' % (indent, code[8:]))
 
             elif code.startswith(('end ', 'end\t')) or code == 'end':
                 if not indent:
