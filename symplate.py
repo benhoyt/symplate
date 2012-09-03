@@ -260,6 +260,15 @@ def render(_renderer, %s):
         }
         return names
 
+    def _make_output_dir(self, output_dir):
+        """Create an output directories along with its __init__.py."""
+        if os.path.exists(output_dir):
+            return
+        os.mkdir(output_dir)
+        init_py_name = os.path.join(output_dir, '__init__.py')
+        with open(init_py_name, 'w') as f:
+            f.write('')
+
     def compile(self, name):
         """Compile given template to .py in output directory."""
         names = self._get_filenames(name)
@@ -269,12 +278,13 @@ def render(_renderer, %s):
         py_source = self._compile_string(
                 template, filename=os.path.abspath(names['symplate']))
 
-        output_dir = os.path.join(self.output_dir, os.path.split(name)[0])
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            init_py_name = os.path.join(output_dir, '__init__.py')
-            with open(init_py_name, 'w') as f:
-                f.write('')
+        # create intermediate and final output directories with __init__.py
+        self._make_output_dir(self.output_dir)
+        rel_output_dir = os.path.normpath(os.path.dirname(name))
+        dir_names = rel_output_dir.split(os.sep)
+        for i in range(len(dir_names)):
+            cur_output_dir = os.path.join(self.output_dir, *dir_names[:i + 1])
+            self._make_output_dir(cur_output_dir)
 
         with open(names['py'], 'w') as f:
             f.write(py_source.encode('utf-8'))
