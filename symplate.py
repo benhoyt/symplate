@@ -4,6 +4,7 @@ See README.md or https://github.com/benhoyt/symplate for documentation.
 
 """
 
+# TODO: multi-line {% ... %} blocks
 # TODO: document, comment
 # TODO: simplify os.walk/relpath stuff in _main?
 # TODO: unit tests, check on 2.5
@@ -218,7 +219,7 @@ def render(renderer, %s):
                                 get_line_num(pieces, i), '{%' + piece)
                 indent = indent[:-4]
                 if inside_template and not indent:
-                    write("\n    return ''.join(_output)\n")
+                    write("\n    return u''.join(_output)\n")
                     inside_template = False
 
             else:
@@ -244,7 +245,7 @@ def render(renderer, %s):
             raise Error('template must end at top level',
                         get_line_num(pieces, i), '{%' + piece)
         if inside_template:
-            write("\n    return ''.join(_output)\n")
+            write("\n    return u''.join(_output)\n")
 
         return ''.join(output)
 

@@ -80,16 +80,36 @@ things if you want. By default it simply returns the string
 Note the modified `premable` so the compiled template has the `json` module
 available.
 
+
 Unicode handling
 ----------------
 
-* TODO
+Symplate templates have full support for Unicode. The template files are
+always encoded in UTF-8, and internally Symplate builds the template as
+unicode.
+
+`render()` always returns a unicode string, and it's best to pass unicode
+strings as arguments to `render()`, but you can also pass byte strings encoded
+as UTF-8 -- the default filter `html_filter` will handle both.
 
 
 Comments
 --------
 
-* TODO: {% # foo %}, and note that you can't do {% for x in y: # comment %}
+Because `{% ... %}` blocks are simply copied to the compiled template as
+Python code, there's no special handling for comments -- just use standard
+Python `#` comments inside code blocks:
+
+    {% # This is a comment. %}
+    {% # Multi-line comments
+       # work fine too. %}
+    {{ foo # DON'T COMMENT INSIDE OUTPUT EXPRESSIONS }}
+
+One quirk is that Symplate determines when to indent the Python output based
+on the `:` character being at the end of the line, so you can't add a comment
+after the colon that begins an indentation block:
+
+    {% for element in lst: # THIS WON'T WORK %}
 
 
 Outputting a literal {{
@@ -120,4 +140,41 @@ Default Renderer and customizing
 Command line usage
 ------------------
 
-* TODO
+Symplate (symplate.py) can also be run as a command-line script. This is
+currently only useful for pre-compiling one or more templates, which might be
+useful in a constrained deployment environment where you can only upload
+Python code, and not write to the file system.
+
+Simply specify your template directory and output directory and it'll compile
+all your templates to Python code. Straight from the command line help:
+
+    Usage: symplate.py [-h] [options] action [name|dir|glob]
+
+    Actions:
+      compile   compile given template, directory or glob (relative to
+                TEMPLATE_DIR), default "*.symp"
+
+    Options:
+      --version             show program's version number and exit
+      -h, --help            show this help message and exit
+      -q, --quiet           don't print compiling information
+      -n, --non-recursive   don't recurse into subdirectories
+      -t TEMPLATE_DIR, --template-dir=TEMPLATE_DIR
+                            directory your Symplate files are in
+      -o OUTPUT_DIR, --output-dir=OUTPUT_DIR
+                            compiled template output directory, default
+                            "symplouts"
+      -p PREAMBLE, --preamble=PREAMBLE
+                            template preamble (see docs), default ""
+
+
+Flames, comments, bug reports
+-----------------------------
+
+Please send flames, comments, and questions about Symplate to Ben Hoyt:
+
+http://benhoyt.com/
+
+File bug reports or feature requests at the GitHub project page:
+
+https://github.com/benhoyt/symplate
