@@ -173,8 +173,6 @@ it is -- `{% template [args] %}` gets compiled to:
 
 If you need to import other modules, do so at the top of your template, above
 the `template` directive (just like in Python you import before writing code).
-You can also define your own functions or classes in templates -- again, just
-put them above the main `template` directive.
 
 `{% include name[, args] %}` renders the template with the given name and
 arguments and writes the result to the output. This is exactly equivalent to

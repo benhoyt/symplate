@@ -4,7 +4,6 @@ See README.md or https://github.com/benhoyt/symplate for documentation.
 
 """
 
-# TODO: multi-line {% ... %} blocks
 # TODO: simplify os.walk/relpath stuff in _main?
 # TODO: unit tests, check on 2.5
 # TODO: add setup.py, etc
@@ -185,39 +184,41 @@ class Renderer(object):
                     msg = 'more than one %} after block'
                 raise Error(msg, get_line_num(pieces, i), '{%' + piece)
             code, text = code_text
-            code = code.strip()
 
-            if code.startswith(('template ', 'template\t')) or \
-               code == 'template':
-                write("""
+            for line in code.splitlines():
+                line = line.strip()
+                if line.startswith(('template ', 'template\t')) or \
+                   line == 'template':
+                    write("""
 def render(_renderer, %s):
     _output = []
     _write = _output.append
     _filter = %s
 
-""" % (code[9:], self.get_default_filter(filename)))
-                if indent:
-                    raise Error('{% template ... %} must be at top level',
-                                get_line_num(pieces, i), '{%' + piece)
-                indent += '    '
-                inside_template = True
-
-            elif code.startswith(('include ', 'include\t')):
-                write('%s_write(_renderer.render(%s))\n' % (indent, code[8:]))
-
-            elif code.startswith(('end ', 'end\t')) or code == 'end':
-                if not indent:
-                    raise Error('extra {% end %}',
-                                get_line_num(pieces, i), '{%' + piece)
-                indent = indent[:-4]
-                if inside_template and not indent:
-                    write("\n    return u''.join(_output)\n")
-                    inside_template = False
-
-            else:
-                write(indent + code + '\n')
-                if code.endswith(':') and not code.startswith('#'):
+""" % (line[9:], self.get_default_filter(filename)))
+                    if indent:
+                        raise Error('{% template ... %} must be at top level',
+                                    get_line_num(pieces, i), '{%' + piece)
                     indent += '    '
+                    inside_template = True
+
+                elif line.startswith(('include ', 'include\t')):
+                    write('%s_write(_renderer.render(%s))\n' % (
+                          indent, line[8:]))
+
+                elif line.startswith(('end ', 'end\t')) or line == 'end':
+                    if not indent:
+                        raise Error('extra {% end %}',
+                                    get_line_num(pieces, i), '{%' + piece)
+                    indent = indent[:-4]
+                    if inside_template and not indent:
+                        write("\n    return u''.join(_output)\n")
+                        inside_template = False
+
+                else:
+                    write(indent + line + '\n')
+                    if line.endswith(':') and not line.startswith('#'):
+                        indent += '    '
 
             # eat EOL immediately after a closing %}
             if text.startswith('\n'):
