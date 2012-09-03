@@ -4,7 +4,6 @@ See README.md or https://github.com/benhoyt/symplate for documentation.
 
 """
 
-# TODO: add .gitattributes to normalize line endings
 # TODO: simplify os.walk/relpath stuff in _main?
 # TODO: unit tests, check on 2.5
 # TODO: add setup.py, etc
