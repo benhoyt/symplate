@@ -27,14 +27,11 @@ class Error(Exception):
 
     def __str__(self):
         line_msg = ', line %d' % self.line_num
-        if '\n' in self.text:
-            non_blanks = [l for l in self.text.splitlines() if l.strip()]
-            if non_blanks:
-                text_msg = ': %s ...' % non_blanks[0]
-            else:
-                text_msg = ''
+        non_blanks = [l for l in self.text.splitlines() if l.strip()]
+        if non_blanks:
+            text_msg = ': %s ...' % non_blanks[0]
         else:
-            text_msg = ': ' + self.text
+            text_msg = ''
         return self.msg + line_msg + text_msg
 
     def __repr__(self):
@@ -167,14 +164,14 @@ class Renderer(object):
 
         indent = ''
         pieces = template.split('{%')
-        inside_template = False
+        in_template = False
         got_template = False
         for i, piece in enumerate(pieces):
             if i == 0:
                 if piece.strip():
-                    # output found before any {% directives %}
+                    # output found before any {% ... %} blocks
                     raise Error('output must be inside {% template ... %}',
-                                piece.rstrip().count('\n') + 1, piece)
+                                1, piece)
                 continue
 
             code_text = piece.split('%}')
@@ -201,7 +198,7 @@ def render(_renderer, %s):
                         raise Error('{% template ... %} must be at top level',
                                     get_line_num(pieces, i), '{%' + piece)
                     indent += '    '
-                    inside_template = True
+                    in_template = True
                     got_template = True
 
                 elif line.startswith(('include ', 'include\t')):
@@ -213,9 +210,9 @@ def render(_renderer, %s):
                         raise Error('extra {% end %}',
                                     get_line_num(pieces, i), '{%' + piece)
                     indent = indent[:-4]
-                    if inside_template and not indent:
+                    if in_template and not indent:
                         write("\n    return u''.join(_output)\n")
-                        inside_template = False
+                        in_template = False
 
                 else:
                     write(indent + line + '\n')
@@ -228,21 +225,22 @@ def render(_renderer, %s):
 
             # ignore whitespace before {% template ... %}, if inside template
             # then write output
-            if inside_template or text.strip():
+            if in_template or text.strip():
                 text_output = self._compile_text(text, indent, pieces, i)
-                if text_output and not inside_template:
+                if text_output and not in_template:
                     raise Error('output must be inside {% template ... %}',
-                                piece.rstrip().count('\n') + 1, text)
+                                get_line_num(pieces, i + 1), text)
                 output.extend(text_output)
 
         if not got_template:
+            lines = '{%'.join(pieces).splitlines() or '\n'
             raise Error('no {% template ... %} directive',
-                        get_line_num(pieces, i), '{%' + piece)
-        if (inside_template and len(indent) != 4) or \
-           (not inside_template and indent):
+                        len(lines), lines[-1])
+        if in_template and len(indent) != 4 or not in_template and indent:
+            lines = '{%'.join(pieces).splitlines() or '\n'
             raise Error('template must end at top level',
-                        get_line_num(pieces, i), '{%' + piece) # TODO
-        if inside_template:
+                        len(lines), lines[-1])
+        if in_template:
             write("\n    return u''.join(_output)\n")
 
         return ''.join(output)
@@ -299,7 +297,7 @@ def render(_renderer, %s):
         if self.modify_path:
             path_dir = os.path.join(self.output_dir, '..')
             if path_dir not in sys.path:
-                sys.path.append(path_dir)
+                sys.path.insert(0, path_dir)
 
         names = self._get_filenames(name)
         if self.check_mtime:

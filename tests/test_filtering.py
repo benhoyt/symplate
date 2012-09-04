@@ -6,10 +6,7 @@ import utils
 
 class TestFiltering(utils.TestCase):
     def test_default_filter(self):
-        self.assertEqual(self.render(r"""
-{% template %}
-{{ 'a&z' }}
-"""), u'a&amp;z')
+        self.assertEqual(self.render("{% template %}{{ 'a&z' }}"), u'a&amp;z')
 
     def test_set_filter(self):
         self.assertEqual(self.render(r"""
@@ -21,10 +18,7 @@ class TestFiltering(utils.TestCase):
 """, val='"'), u"'\"'\n&quot;")
 
     def test_raw(self):
-        self.assertEqual(self.render(r"""
-{% template %}
-{{ !'<b>' }}
-"""), u'<b>')
+        self.assertEqual(self.render("{% template %}{{ !'<b>' }}"), u'<b>')
 
     def test_override_default_filter(self):
         filenames = set()
@@ -32,14 +26,9 @@ class TestFiltering(utils.TestCase):
             def get_default_filter(self, filename):
                 filenames.add(filename)
                 return 'lambda s: s.upper()'
-        self.assertEqual(self.render(r"""
-{% template %}
-{{ 'a&z' }}
-""", _renderer=OverrideRenderer()), u'A&Z')
-        self.assertEqual(self.render(r"""
-{% template %}
-{{ 'z&a' }}
-""", _renderer=OverrideRenderer()), u'Z&A')
+        renderer = OverrideRenderer()
+        self.assertEqual(self.render("{% template %}{{ 'a&z' }}", _renderer=renderer), u'A&Z')
+        self.assertEqual(self.render("{% template %}{{ 'z&a' }}", _renderer=renderer), u'Z&A')
         # at least test that filenames were different
         self.assertEqual(len(filenames), 2)
 
