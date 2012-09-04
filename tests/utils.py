@@ -12,9 +12,7 @@ renderer = symplate.Renderer(template_dir=template_dir, output_dir=output_dir,
                              check_mtime=True)
 
 class TestCase(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super(TestCase, self).__init__(*args, **kwargs)
-        self._template_num = 0
+    _template_num = 0
 
     def _write_template(self, name, template):
         if isinstance(template, unicode):
@@ -29,14 +27,17 @@ class TestCase(unittest.TestCase):
 
     def render(self, template, *args, **kwargs):
         """Compile and render template source string with given args."""
-        self._template_num += 1
+        _strip = kwargs.pop('_strip', True  )
+        TestCase._template_num += 1
         try:
-            asdf
             name = sys._getframe(1).f_code.co_name
         except Exception:
             # Python implementation doesn't support _getframe, use numbered
             # template names
-            name = 'test_%d' % self._template_num
+            name = 'test_%d' % TestCase._template_num
         name = '%s/%s' % (self.__class__.__name__, name)
         self._write_template(name, template)
-        return renderer.render(name, *args, **kwargs)
+        output = renderer.render(name, *args, **kwargs)
+        if _strip:
+            output = output.strip()
+        return output
