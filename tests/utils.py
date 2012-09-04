@@ -6,10 +6,17 @@ import unittest
 
 import symplate
 
-template_dir = os.path.join(os.path.dirname(__file__), 'symplates')
-output_dir = os.path.join(os.path.dirname(__file__), 'symplouts')
-renderer = symplate.Renderer(template_dir=template_dir, output_dir=output_dir,
-                             check_mtime=True)
+TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'symplates')
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'symplouts')
+
+class Renderer(symplate.Renderer):
+    def __init__(self, *args, **kwargs):
+        super(Renderer, self).__init__(*args, **kwargs)
+        self.template_dir = TEMPLATE_DIR
+        self.output_dir = OUTPUT_DIR
+        self.check_mtime = True
+
+renderer = Renderer()
 
 class TestCase(unittest.TestCase):
     _template_num = 0
@@ -17,7 +24,7 @@ class TestCase(unittest.TestCase):
     def _write_template(self, name, template):
         if isinstance(template, unicode):
             template = template.encode('utf-8')
-        filename = os.path.join(template_dir, name + '.symp')
+        filename = os.path.join(TEMPLATE_DIR, name + '.symp')
         dirname = os.path.dirname(filename)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
@@ -27,17 +34,19 @@ class TestCase(unittest.TestCase):
 
     def render(self, template, *args, **kwargs):
         """Compile and render template source string with given args."""
-        _strip = kwargs.pop('_strip', True  )
+        _strip = kwargs.pop('_strip', True)
+        _renderer = kwargs.pop('_renderer', renderer)
         TestCase._template_num += 1
         try:
-            name = sys._getframe(1).f_code.co_name
+            name = '_' + sys._getframe(1).f_code.co_name
         except Exception:
             # Python implementation doesn't support _getframe, use numbered
             # template names
-            name = 'test_%d' % TestCase._template_num
-        name = '%s/%s' % (self.__class__.__name__, name)
+            name = ''
+        name = '%s/test_%d%s' % (self.__class__.__name__,
+                                 TestCase._template_num, name)
         self._write_template(name, template)
-        output = renderer.render(name, *args, **kwargs)
+        output = _renderer.render(name, *args, **kwargs)
         if _strip:
             output = output.strip()
         return output
