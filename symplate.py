@@ -27,9 +27,11 @@ class Error(Exception):
 
     def __str__(self):
         line_msg = ', line %d' % self.line_num
-        non_blanks = [l for l in self.text.splitlines() if l.strip()]
+        non_blanks = [l.strip() for l in self.text.splitlines() if l.strip()]
         if non_blanks:
-            text_msg = ': %s ...' % non_blanks[0]
+            text_msg = ': ' + non_blanks[0]
+            if len(non_blanks) > 1:
+                text_msg += ' ...'
         else:
             text_msg = ''
         return self.msg + line_msg + text_msg
