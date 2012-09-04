@@ -221,6 +221,10 @@ example:
     {% _filter = json.dumps %}
     {{ obj, indent=4, sort_keys=True }}
 
+If you need to change back to the default filter (`html_filter`), just say:
+
+    {% _filter = symplate.html_filter %}
+
 ### Changing the default filter
 
 You can change the default filter by subclassing `Renderer` and overriding

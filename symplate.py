@@ -168,6 +168,7 @@ class Renderer(object):
         indent = ''
         pieces = template.split('{%')
         inside_template = False
+        got_template = False
         for i, piece in enumerate(pieces):
             if i == 0:
                 if piece.strip():
@@ -201,6 +202,7 @@ def render(_renderer, %s):
                                     get_line_num(pieces, i), '{%' + piece)
                     indent += '    '
                     inside_template = True
+                    got_template = True
 
                 elif line.startswith(('include ', 'include\t')):
                     write('%s_write(_renderer.render(%s))\n' % (
@@ -233,10 +235,13 @@ def render(_renderer, %s):
                                 piece.rstrip().count('\n') + 1, text)
                 output.extend(text_output)
 
+        if not got_template:
+            raise Error('no {% template ... %} directive',
+                        get_line_num(pieces, i), '{%' + piece)
         if (inside_template and len(indent) != 4) or \
            (not inside_template and indent):
             raise Error('template must end at top level',
-                        get_line_num(pieces, i), '{%' + piece)
+                        get_line_num(pieces, i), '{%' + piece) # TODO
         if inside_template:
             write("\n    return u''.join(_output)\n")
 
