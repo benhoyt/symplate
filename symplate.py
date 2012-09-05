@@ -138,7 +138,7 @@ class Renderer(object):
                     msg = 'no }} at end of expression'
                 else:
                     msg = 'more than one }} after expression'
-                previous = '{{'.join(outer_pieces[:outer_i] + pieces[:i])
+                previous = '{{'.join(outer_pieces[:outer_i + 1] + pieces[:i])
                 raise Error(msg, previous.count('\n') + 1, '{{' + piece)
             expr, string = expr_string
             expr = expr.strip()

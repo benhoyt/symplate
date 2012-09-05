@@ -6,10 +6,10 @@ from symplate import html_filter
 
 class TestHtmlFilter(unittest.TestCase):
     def test_none(self):
-        self.assertEqual(html_filter(None), u'')
+        self.assertEqual(html_filter(None), '')
 
     def test_str(self):
-        self.assertEqual(html_filter('foo'), u'foo')
+        self.assertEqual(html_filter('foo'), 'foo')
         self.assertEqual(html_filter('\xe2\x80\x99'), u'\u2019')
         self.assertRaises(UnicodeError, html_filter, '\xff')
 
@@ -18,7 +18,7 @@ class TestHtmlFilter(unittest.TestCase):
         self.assertEqual(html_filter(u'<\u2019>'), u'&lt;\u2019&gt;')
 
     def test_non_string(self):
-        self.assertEqual(html_filter(1234), u'1234')
+        self.assertEqual(html_filter(1234), '1234')
 
     def test_special_chars(self):
         self.assertEqual(html_filter('foo &<>\'" bar'), 'foo &amp;&lt;&gt;&#39;&quot; bar')

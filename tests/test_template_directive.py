@@ -7,7 +7,7 @@ import utils
 class TestTemplateDirective(utils.TestCase):
     def test_no_args(self):
         template = "{% template %}a{{'b'}}c"
-        self.assertEqual(self.render(template), u'abc')
+        self.assertEqual(self.render(template), 'abc')
         self.assertRaises(TypeError, self.render, template, foo='bar')
 
     def test_positional_args(self):
@@ -47,12 +47,6 @@ class TestTemplateDirective(utils.TestCase):
 
     def test_no_directive(self):
         self.assertTemplateError(2, '#two', self.render, '{% #one %}\n{% #two %}')
-
-    def test_output_before(self):
-        self.assertTemplateError(1, 'one', self.render, 'one\ntwo')
-
-    def test_output_outside(self):
-        self.assertTemplateError(3, 'foo', self.render, '{% template %}\n{% end %}\nfoo')
 
     def test_at_top_level(self):
         self.assertTemplateError(2, 'template', self.render, '{% while 1: %}\n{% template %}')
