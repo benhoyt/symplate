@@ -4,8 +4,9 @@ See README.md or https://github.com/benhoyt/symplate for documentation.
 
 """
 
-# TODO: simplify os.walk/relpath stuff in _main?
 # TODO: unit tests, check on 2.5
+# TODO: can we get original line numbers by outputting "# line: N" comments and then reading them?
+# TODO: simplify os.walk/relpath stuff in _main?
 # TODO: add setup.py, etc
 # TODO: investigate inheritance in style of bottle.py?
 # TODO: Python 3 support?
@@ -189,6 +190,9 @@ class Renderer(object):
                 line = line.strip()
                 if line.startswith(('template ', 'template\t')) or \
                    line == 'template':
+                    if got_template:
+                        raise Error("can't have multiple {% template %} directives",
+                                    get_line_num(pieces, i), '{%' + piece)
                     write("""
 def render(_renderer, %s):
     _output = []

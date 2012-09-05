@@ -61,5 +61,8 @@ class TestTemplateDirective(utils.TestCase):
         self.assertTemplateError(2, 'while', self.render, '{% template %}\n{% while 1: %}')
         self.assertTemplateError(3, 'while', self.render, '{% template %}\n{% end %}\n{% while 1: %}')
 
+    def test_multiple(self):
+        self.assertTemplateError(2, 'bar', self.render, '{% template %}foo{% end %}\n{% template %}bar')
+
 if __name__ == '__main__':
     unittest.main()
