@@ -4,13 +4,6 @@ See README.md or https://github.com/benhoyt/symplate for documentation.
 
 """
 
-# TODO: unit tests, check on 2.5
-# TODO: can we get original line numbers by outputting "# line: N" comments and then reading them?
-# TODO: simplify os.walk/relpath stuff in _main?
-# TODO: add setup.py, etc
-# TODO: investigate inheritance in style of bottle.py?
-# TODO: Python 3 support?
-
 from __future__ import with_statement
 
 import os
