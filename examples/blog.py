@@ -1,13 +1,17 @@
 """Symplate example to render a simple blog homepage."""
 
 import collections
+import os
 import sys
 
 import symplate
 
 BlogEntry = collections.namedtuple('BlogEntry', 'title url html_body')
 
-renderer = symplate.Renderer(check_mtime=True)
+renderer = symplate.Renderer(
+        template_dir=os.path.join(os.path.dirname(__file__), 'symplates'),
+        output_dir=os.path.join(os.path.dirname(__file__), 'symplouts'),
+        check_mtime=True)
 
 def main():
     entries = [
