@@ -141,7 +141,7 @@ class Renderer(object):
                 if expr:
                     write('%s_write(%s)\n' % (indent, expr))
             elif expr:
-                write('%s_write(_filter(%s))\n' % (indent, expr))
+                write('%s_write(filt(%s))\n' % (indent, expr))
             add_string(string)
 
         return output
@@ -188,9 +188,10 @@ class Renderer(object):
                                     get_line_num(pieces, i), '{%' + piece)
                     write("""
 def render(_renderer, %s):
+    filt = %s
+    render = _renderer.render
     _output = []
     _write = _output.append
-    _filter = %s
 
 """ % (line[9:], self.get_default_filter(filename)))
                     if indent:
@@ -199,10 +200,6 @@ def render(_renderer, %s):
                     indent += '    '
                     in_template = True
                     got_template = True
-
-                elif line.startswith(('include ', 'include\t')):
-                    write('%s_write(_renderer.render(%s))\n' % (
-                          indent, line[8:]))
 
                 elif line.startswith(('end ', 'end\t')) or line == 'end':
                     if not indent:

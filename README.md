@@ -16,7 +16,7 @@ have to be wrapped in quotes. Plus, you don't get auto-escaping.
 So I ended up with a very direct Symplate-to-Python compilation process:
 
 * `text` becomes `_write('text')`
-* `{{ expr }}` becomes `_write(_filter(expr))`
+* `{{ expr }}` becomes `_write(filt(expr))`
 * `{% code %}` becomes `code` at the correct indentation level
 * indentation increases when a code line ends with a colon, as in
   `{% for x in lst: %}`
@@ -51,22 +51,29 @@ Let's start with a simple example that uses more or less all the features of
 Symplate. Our main template is `blog.symp`:
 
     {% template entries, title='My Blog' %}
-    {% include 'inc/header', title %}
+    {{ !render('inc/header', title) }}
     <h1>This is {{ title }}</h1>
     {% for entry in entries: %}
         <h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
         {{ !entry.html_body }}
     {% end %}
     </ul>
-    {% include 'inc/footer' %}
+    {{ !render('inc/footer') }}
 
 This is Python, so everything's explicit. We explicitly specify the parameters
 this template takes in the `{% template ... %}` line, including the default
-parameter `title`. The arguments passed to included sub-templates are
-specified explicitly (no yucky setting of globals for includes).
+parameter `title`.
+
+For simplicity, there's no special "include" directive -- you just `render()`
+a sub-template. Usually you want the `!` prefix meaning don't filter the
+rendered output. The arguments passed to `render()`ed sub-templates are
+specified explicitly, so there's no yucky setting of globals when rendering
+included templates. (Note: `render` is set to the current Renderer instance's
+`render` function.)
 
 Note that `entry.html_body` contains pre-rendered HTML, so this expression is
-prefixed with `!`, meaning output a raw, unescaped string.
+also prefixed with `!` -- it will output the HTML body as a raw, unescaped
+string.
 
 Then `inc/header.symp` looks like this:
 
@@ -124,24 +131,26 @@ The `blog.symp` example above produces this in `blog.py`:
     import symplate
 
     def render(_renderer, entries, title='My Blog'):
+        filt = symplate.html_filter
+        render = _renderer.render
         _output = []
         _write = _output.append
-        _filter = symplate.html_filter
 
-        _write(_renderer.render('inc/header', title))
-        _write(u'<h1>This is ')
-        _write(_filter(title))
+        _write(render('inc/header', title))
+        _write(u'\n<h1>This is ')
+        _write(filt(title))
         _write(u'</h1>\n')
         for entry in entries:
             _write(u'    <h2><a href="')
-            _write(_filter(entry.url))
+            _write(filt(entry.url))
             _write(u'">')
-            _write(_filter(entry.title.title()))
+            _write(filt(entry.title.title()))
             _write(u'</a></h2>\n    ')
             _write(entry.html_body)
             _write(u'\n')
         _write(u'</ul>\n')
-        _write(_renderer.render('inc/footer'))
+        _write(render('inc/footer'))
+        _write(u'\n')
 
         return u''.join(_output)
 
@@ -155,8 +164,8 @@ is a minor drawback of Symplate's KISS approach.)
 Directives
 ----------
 
-The only directives or keywords in Symplate are `template`, `include`, and
-`end`. Oh, and "colon at the end of a code line".
+The only directives or keywords in Symplate are `template` and `end`. Oh, and
+"colon at the end of a code line".
 
 `{% template [args] %}` must appear at the start of a template before any
 output. `args` is the argument specification including positional and
@@ -166,10 +175,6 @@ it is -- `{% template [args] %}` gets compiled to
 
 If you need to import other modules, do so at the top of your template, above
 the `template` directive (just like in Python you import before writing code).
-
-`{% include name[, args] %}` renders the template with the given name and
-arguments and writes the result to the output. This is exactly equivalent to
-the more clumsy `{{ !_renderer.render(name, args) }}`.
 
 `{% end [...] %}` ends a code indentation block. All it does is reduce the
 indentation level in the compiled Python output. The `...` is optional, and
@@ -209,21 +214,19 @@ output, meaning it must be a unicode string or a pure-ASCII byte string.
 
 ### Setting the filter
 
-To set the current filter, just say `{% _filter = filter_function %}`.
-`_filter` is simply a local variable in the compiled template, and it should
-be set to a function which takes a single argument and returns a unicode
-or ASCII string.
+To set the current filter, just say `{% filt = filter_function %}`. `filt` is
+simply a local variable in the compiled template, and it should be set to a
+function which takes a single argument and returns a unicode or ASCII string.
 
-The expression inside a `{{ ... }}` is passed directly to the current
-`_filter` function, so you can pass other arguments to custom filters. For
-example:
+The expression inside a `{{ ... }}` is passed directly to the current `filt`
+function, so you can pass other arguments to custom filters. For example:
 
-    {% _filter = json.dumps %}
+    {% filt = json.dumps %}
     {{ obj, indent=4, sort_keys=True }}
 
 If you need to change back to the default filter (`html_filter`), just say:
 
-    {% _filter = symplate.html_filter %}
+    {% filt = symplate.html_filter %}
 
 ### Changing the default filter
 

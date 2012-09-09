@@ -1,4 +1,4 @@
-"""Unit tests for output filtering and changing _filter."""
+"""Unit tests for output filtering and changing filter."""
 
 import unittest
 
@@ -11,9 +11,9 @@ class TestFiltering(utils.TestCase):
     def test_set_filter(self):
         self.assertEqual(self.render(r"""
 {% template val %}
-{% _filter = lambda s: repr(s) %}
+{% filt = lambda s: repr(s) %}
 {{ val }}
-{% _filter = symplate.html_filter %}
+{% filt = symplate.html_filter %}
 {{ val }}
 """, val='"'), u"'\"'\n&quot;")
 
