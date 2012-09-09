@@ -9,7 +9,7 @@ from __future__ import with_statement
 import os
 import sys
 
-__version__ = '1.0'
+__version__ = '0.9'
 
 class Error(Exception):
     """A Symplate template or syntax error."""
