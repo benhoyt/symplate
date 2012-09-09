@@ -291,10 +291,20 @@ def render(_renderer, %s):
         with open(names['py'], 'w') as f:
             f.write(py_source.encode('utf-8'))
 
+        # ensure .pyc and .pyo are gone so it doesn't get reloaded from them
+        def remove_if_exists(filename):
+            try:
+                os.remove(filename)
+            except OSError:
+                pass
+        py_basename = os.path.splitext(names['py'])[0]
+        remove_if_exists(py_basename + '.pyc')
+        remove_if_exists(py_basename + '.pyo')
+
     def render(self, name, *args, **kwargs):
         """Render given template with given positional and keyword args."""
         if self.modify_path:
-            path_dir = os.path.join(self.output_dir, '..')
+            path_dir = os.path.abspath(os.path.join(self.output_dir, '..'))
             if path_dir not in sys.path:
                 sys.path.insert(0, path_dir)
 
@@ -307,6 +317,9 @@ def render(_renderer, %s):
                 py_mtime = 0
             if os.path.getmtime(names['symplate']) > py_mtime:
                 self.compile(name)
+                # .py changed, ensure module is reloaded when imported below
+                if names['module'] in sys.modules:
+                    sys.modules.pop(names['module'])
 
         # try to import the compiled template; if it doesn't exist (it's never
         # been compiled), compile it and then re-import
