@@ -41,21 +41,20 @@ def html_filter(obj):
     obj is None, return empty string. If obj is not a unicode string, convert
     it to a unicode string first.
     """
-    if obj is None:
-        return u''
-    elif not isinstance(obj, unicode):
+    if not isinstance(obj, unicode):
         if isinstance(obj, str):
             # if it's a byte string, do the best we can (try converting from
             # UTF-8, which is a superset of ASCII)
             obj = unicode(obj, 'utf-8')
+        elif obj is None:
+            return u''
         else:
             obj = unicode(obj)
-    obj = obj.replace(u'&', u'&amp;')
-    obj = obj.replace(u'<', u'&lt;')
-    obj = obj.replace(u'>', u'&gt;')
-    obj = obj.replace(u"'", u'&#39;')
-    obj = obj.replace(u'"', u'&quot;')
-    return obj
+    return (obj.replace(u'&', u'&amp;')
+               .replace(u'<', u'&lt;')
+               .replace(u'>', u'&gt;')
+               .replace(u"'", u'&#39;')
+               .replace(u'"', u'&quot;'))
 
 class Renderer(object):
     """Symplate renderer class. See __init__'s docs for more info."""
