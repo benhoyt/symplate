@@ -19,12 +19,17 @@ class Renderer(symplate.Renderer):
 renderer = Renderer()
 
 class TestCase(unittest.TestCase):
-    _template_num = 0
+    def setUp(self):
+        # would use setUpClass, but that's Python 2.7+ only
+        cls = self.__class__
+        if not hasattr(cls, '_class_set_up'):
+            cls._class_set_up = True
+            TestCase._template_num = 0
 
-    def _write_template(self, name, template):
+    def _write_template(self, _renderer, name, template):
         if isinstance(template, unicode):
             template = template.encode('utf-8')
-        filename = os.path.join(TEMPLATE_DIR, name + '.symp')
+        filename = os.path.join(_renderer.template_dir, name + _renderer.extension)
         dirname = os.path.dirname(filename)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
@@ -36,17 +41,21 @@ class TestCase(unittest.TestCase):
         """Compile and render template source string with given args."""
         _strip = kwargs.pop('_strip', True)
         _renderer = kwargs.pop('_renderer', renderer)
+        _increment = kwargs.pop('_increment', 1)
 
-        TestCase._template_num += 1
+        TestCase._template_num += _increment
         try:
-            name = '_' + sys._getframe(1).f_code.co_name
+            frame = sys._getframe(1)
+            while not frame.f_code.co_name.startswith('test_'):
+                frame = frame.f_back
+            name = '_' + frame.f_code.co_name[5:]
         except Exception:
             # Python implementation doesn't support _getframe, use numbered
             # template names
             name = ''
-        name = '%s/test_%d%s' % (self.__class__.__name__,
-                                 TestCase._template_num, name)
-        self._write_template(name, template)
+        name = '%s/test%s_%d' % (self.__class__.__name__,
+                                name, TestCase._template_num)
+        self._write_template(_renderer, name, template)
 
         output = _renderer.render(name, *args, **kwargs)
         if _strip:
