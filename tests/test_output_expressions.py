@@ -26,5 +26,23 @@ class TestOutputExpressions(utils.TestCase):
         # TODO: it's quirky that this shows line 1: {% template %} ...
         self.assertTemplateError(1, 'template', self.render, "{% template %}\n{{ foo %} }}")
 
+    def test_python_name_error(self):
+        self.assertRaises(NameError, self.render, '{% template %}{{ asdf }}')
+
+    def test_python_syntax_error(self):
+        self.assertRaises(SyntaxError, self.render, '{% template %}{{ $$$ }}')
+
+    def test_no_close(self):
+        self.assertTemplateError(2, 'foo', self.render, '{% template %}\n{{ foo')
+
+    def test_multiple_closes(self):
+        self.assertTemplateError(2, 'bar', self.render, '{% template %}\n{{ bar }} }}')
+
+    def test_empty(self):
+        self.assertRaises(TypeError, self.render, '{% template %}{{ }}')
+
+    def test_empty_raw(self):
+        self.assertRaises(TypeError, self.render, '{% template %}{{ ! }}')
+
 if __name__ == '__main__':
     unittest.main()

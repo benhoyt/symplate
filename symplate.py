@@ -111,9 +111,10 @@ class Renderer(object):
                 chunks = string.split('"""')
                 write('%s_write(' % indent)
                 for i, chunk in enumerate(chunks):
-                    write('ur"""%s"""' % chunk)
+                    if chunk:
+                        write('ur"""%s""" ' % chunk)
                     if i + 1 < len(chunks):
-                        write(' u\'"""\' ')
+                        write('u\'"""\' ')
                 write(')\n')
             else:
                 write('%s_write(%r)\n' % (indent, string))
@@ -137,9 +138,8 @@ class Renderer(object):
 
             if expr.startswith('!'):
                 expr = expr[1:].lstrip()
-                if expr:
-                    write('%s_write(%s)\n' % (indent, expr))
-            elif expr:
+                write('%s_write(%s)\n' % (indent, expr))
+            else:
                 write('%s_write(filt(%s))\n' % (indent, expr))
             add_string(string)
 
