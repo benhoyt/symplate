@@ -1,5 +1,7 @@
 """Utility functions for unit tests."""
 
+from __future__ import with_statement
+
 import os
 import sys
 import unittest
@@ -68,7 +70,7 @@ class TestCase(unittest.TestCase):
         """
         try:
             func(*args, **kwargs)
-        except symplate.Error as error:
+        except symplate.Error, error:
             if line_num is not None:
                 self.assertEqual(line_num, error.line_num)
             if text_contains is not None:
