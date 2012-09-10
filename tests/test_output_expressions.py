@@ -32,6 +32,9 @@ class TestOutputExpressions(utils.TestCase):
     def test_python_syntax_error(self):
         self.assertRaises(SyntaxError, self.render, '{% template %}{{ $$$ }}')
 
+    def test_no_comment(self):
+        self.assertRaises(SyntaxError, self.render, '{% template %}{{ # no comment }}')
+
     def test_no_close(self):
         self.assertTemplateError(2, 'foo', self.render, '{% template %}\n{{ foo')
 
@@ -43,6 +46,9 @@ class TestOutputExpressions(utils.TestCase):
 
     def test_empty_raw(self):
         self.assertRaises(TypeError, self.render, '{% template %}{{ ! }}')
+
+    def test_outside_template(self):
+        self.assertTemplateError(1, 'foo', self.render, 'foo')
 
 if __name__ == '__main__':
     unittest.main()

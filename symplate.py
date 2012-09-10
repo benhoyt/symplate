@@ -176,7 +176,15 @@ class Renderer(object):
                 else:
                     msg = 'more than one %} after block'
                 raise Error(msg, get_line_num(pieces, i), '{%' + piece)
+            
             code, text = code_text
+            left_brackets_in_code = '{{' in code
+            if left_brackets_in_code or '}}' in code:
+                if left_brackets_in_code:
+                    msg = '{{ not valid in code block'
+                else:
+                    msg = '}} not valid in code block'
+                raise Error(msg, get_line_num(pieces, i), '{%' + piece)
 
             for line in code.splitlines():
                 line = line.strip()
