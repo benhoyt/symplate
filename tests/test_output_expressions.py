@@ -1,10 +1,10 @@
-"""Unit tests for output blocks."""
+"""Unit tests for output expressions."""
 
 import unittest
 
 import utils
 
-class TestOutputBlocks(utils.TestCase):
+class TestOutputExpressions(utils.TestCase):
     def test_basic(self):
         t = "{% template v='' %}"
         self.assertEqual(self.render(t + "a{{ '<' }}c"), 'a&lt;c')

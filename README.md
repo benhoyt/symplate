@@ -209,7 +209,7 @@ Would produce the output:
 ### Outputting raw strings
 
 To output a raw or pre-escaped string, prefix the output expression with `!`.
-For example `{{ !html_block }}` will write `html_block` directly to the
+For example `{{ !html_string }}` will write `html_string` directly to the
 output, meaning it must be a unicode string or a pure-ASCII byte string.
 
 ### Setting the filter
