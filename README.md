@@ -56,7 +56,7 @@ Symplate. Our main template is `blog.symp`:
     {% for entry in entries: %}
         <h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
         {{ !entry.html_body }}
-    {% end %}
+    {% end for %}
     </ul>
     {{ !render('inc/footer') }}
 
@@ -130,7 +130,7 @@ The `blog.symp` example above produces this in `blog.py`:
 
     import symplate
 
-    def render(_renderer, entries, title='My Blog'):
+    def _render(_renderer, entries, title='My Blog'):
         filt = symplate.html_filter
         render = _renderer.render
         _output = []

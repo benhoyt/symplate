@@ -4,6 +4,6 @@
 {% for entry in entries: %}
     <h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
     {{ !entry.html_body }}
-{% end %}
+{% end for %}
 </ul>
 {{ !render('inc/footer') }}

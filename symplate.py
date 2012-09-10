@@ -186,7 +186,7 @@ class Renderer(object):
                         raise Error("can't have multiple {% template %} directives",
                                     get_line_num(pieces, i), '{%' + piece)
                     write("""
-def render(_renderer, %s):
+def _render(_renderer, %s):
     filt = %s
     render = _renderer.render
     _output = []
@@ -325,7 +325,7 @@ def render(_renderer, %s):
             self.compile(name)
             module = __import__(names['module'], fromlist=[names['import']])
 
-        output = module.render(self, *args, **kwargs)
+        output = module._render(self, *args, **kwargs)
         return output
 
 _default_renderer = Renderer()
