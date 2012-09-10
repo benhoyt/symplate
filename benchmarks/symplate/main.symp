@@ -1,0 +1,9 @@
+{% template entries, title='My Blog' %}
+{{ !render('inc/header', title) }}
+<h1>This is {{ title }}</h1>
+{% for entry in entries: %}
+    <h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
+    {{ !entry.html_body }}
+{% end for %}
+</ul>
+{{ !render('inc/footer') }}
