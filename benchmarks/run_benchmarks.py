@@ -1,59 +1,100 @@
 """Run all benchmarks."""
 
+from __future__ import with_statement
+
 import collections
 import os
 import sys
 import timeit
-
-import symplate
+import warnings
 
 BlogEntry = collections.namedtuple('BlogEntry', 'title url html_body')
 
 blog_entries = [
-    BlogEntry('Sorry', '/sorry/', '<p>Sorry for the lack of updates.</p>'),
-    BlogEntry('My life story', '/my-life-story/', '<p>Once upon a time...</p>'),
-    BlogEntry(u'First \u201cpost\u201d', '/first-post/', '<p>This is the first post.</p>'),
+    BlogEntry(u'<Sorry>', u'/sorry/?a=b&c=d', u'<p>Sorry for the lack of updates.</p>'),
+    BlogEntry(u'My life & story', u'/my-life-story/', u'<p>Once upon a time...</p>'),
+    BlogEntry(u'First \u201cpost\u201d', u'/first-post/', u'<p>This is the first post.</p>'),
 ]
+blog_entries *= 10  # To give the render test a bit more to chew on
+
+def rel_dir(dirname):
+    """Return full directory name of dirname from this file's directory."""
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), dirname))
 
 class TemplateLanguage(object):
-    def __init__(self):
-        raise NotImplementedError
+    num_compiles = 1000
+    num_renders = 1000
 
-    def compile(self, name):
-        raise NotImplementedError
+    def compile_main(self):
+        return self.compile('main')
 
-    def render(self, name, *args, **kwargs):
-        raise NotImplementedError
+    def render_main(self):
+        return self.render('main', title='My Blog', entries=blog_entries)
 
-class Symplate(TemplateLanguage):
-    def __init__(self):
-        self.renderer = symplate.Renderer(
-                template_dir=os.path.join(os.path.dirname(__file__), 'symplate'),
-                output_dir=os.path.join(os.path.dirname(__file__), 'symplate_output'),
-                modify_path=False)
-        sys.path.insert(0, os.path.dirname(__file__))
+    def benchmark(self):
+        timings = {}
+        timings['compile'] = min(timeit.repeat(self.compile_main, number=self.num_compiles)) / float(self.num_compiles)
+        timings['render'] = min(timeit.repeat(self.render_main, number=self.num_renders)) / float(self.num_renders)
+        return timings
 
-    def compile(self, name):
-        return self.renderer.compile(name)
+try:
+    import symplate
+except ImportError:
+    warnings.warn("Can't import symplate, is symplate.py in your PYTHONPATH?")
+    symplate = None
+if symplate:
+    class Symplate(TemplateLanguage):
+        def __init__(self):
+            self.renderer = symplate.Renderer(
+                    template_dir=rel_dir('symplate'),
+                    output_dir=rel_dir('symplate_output'),
+                    modify_path=False)
 
-    def render(self, name, *args, **kwargs):
-        return self.renderer.render(name, *args, **kwargs)
+        def compile(self, name):
+            return self.renderer.compile(name)
 
-def benchmark_language(language_class):
-    timings = {}
-    language = language_class()
-    timings['compile'] = min(timeit.repeat(lambda: language.compile('main'), number=1000))
-    timings['render'] = min(timeit.repeat(lambda: language.render('main', blog_entries), number=1000))
-    return timings
+        def render(self, name, **kwargs):
+            return self.renderer.render(name, **kwargs)
+
+try:
+    import Cheetah.Template as cheetah
+    from Cheetah.Filters import WebSafe as cheetah_websafe
+except ImportError:
+    warnings.warn("Can't import Cheetah, is Cheetah in your PYTHONPATH?")
+    cheetah = None
+if cheetah:
+    cheetah.checkFileMtime(False)
+
+    class Cheetah(TemplateLanguage):
+        num_compiles = 100
+
+        def __init__(self):
+            self.template_dir = rel_dir('cheetah')
+
+        def compile(self, name):
+            file_name = os.path.join(self.template_dir, name + '.tmpl')
+            self.template = cheetah.Template.compile(
+                    file=file_name, cacheCompilationResults=False, useCache=False)
+            self.template_name = name
+            return self.template
+
+        def render(self, name, **kwargs):
+            assert name == self.template_name
+            params = dict(kwargs, template_dir=self.template_dir)
+            return self.template(searchList=[params], filter=cheetah_websafe).respond()
 
 def main():
-    language_classes = [cls for name, cls in globals().items()
-                        if isinstance(cls, type) and
-                           issubclass(cls, TemplateLanguage) and
-                           cls is not TemplateLanguage]
-    for cls in language_classes:
-        timings = benchmark_language(cls)
-        print '%.20s %.1f %.1f' % (cls.__name__, timings['compile'] * 1000, timings['render'] * 1000)
+    language_classes = sorted((name, cls) for name, cls in globals().items()
+                              if isinstance(cls, type) and
+                                 issubclass(cls, TemplateLanguage) and
+                                 cls is not TemplateLanguage)
+    for name, cls in language_classes:
+        language = cls()
+        timings = language.benchmark()
+        print '%.20s %.3f %.3f' % (name, timings['compile'] * 1000, timings['render'] * 1000)
+        with open(name.lower() + '.html', 'w') as f:
+            language.compile_main()
+            f.write(language.render_main().encode('utf-8'))
 
 if __name__ == '__main__':
     main()

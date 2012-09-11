@@ -1,6 +1,9 @@
-{% template entries, title='My Blog' %}
+{% template entries, title %}
 {{ !render('inc/header', title) }}
 <h1>This is {{ title }}</h1>
+<p>This is a bunch of text just to test a whole bunch of text.</p>
+<p>This is another bunch of text just to test a whole bunch of text.</p>
+<p>This is yet another bunch of text just to test a whole bunch of text.</p>
 {% for entry in entries: %}
     <h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
     {{ !entry.html_body }}
