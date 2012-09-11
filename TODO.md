@@ -1,3 +1,4 @@
+* FIX elif and similar indentation, need: 'elif', 'else', 'except', 'finally' treated specially
 * get rid of modify_path? it's slow-by-default behaviour
 * simplify os.walk/relpath stuff in _main?
   - perhaps add a compile_all to Renderer instead

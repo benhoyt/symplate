@@ -1,13 +1,23 @@
 #include $template_dir + "/header.tmpl"
-<h1>This is $title</h1>
-<p>This is a bunch of text just to test a whole bunch of text.</p>
-<p>This is another bunch of text just to test a whole bunch of text.</p>
-<p>This is yet another bunch of text just to test a whole bunch of text.</p>
+
+#def paragraph($word)
+    <p>This is $word bunch of text just to test a whole bunch of text.</p>
+#end def
+#filter Filter
+$paragraph('a')
+$paragraph('another')
+$paragraph('yet another')
+#end filter
+
 #for $entry in $entries:
-    <h2><a href="$entry.url">$entry.title.title()</a></h2>
+    #if $entry.url
+        <h2><a href="$entry.url">$entry.title.title()</a></h2>
+    #else
+        <h2>$entry.title.title()</h2>
+    #end if
     #filter Filter
     $entry.html_body
     #end filter
 #end for
-</ul>
+
 #include $template_dir + "/footer.tmpl"

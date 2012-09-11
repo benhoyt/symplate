@@ -12,7 +12,7 @@ BlogEntry = collections.namedtuple('BlogEntry', 'title url html_body')
 
 blog_entries = [
     BlogEntry(u'<Sorry>', u'/sorry/?a=b&c=d', u'<p>Sorry for the lack of updates.</p>'),
-    BlogEntry(u'My life & story', u'/my-life-story/', u'<p>Once upon a time...</p>'),
+    BlogEntry(u'My life & story', None, u'<p>Once upon a time...</p>'),
     BlogEntry(u'First \u201cpost\u201d', u'/first-post/', u'<p>This is the first post.</p>'),
 ]
 blog_entries *= 10  # To give the render test a bit more to chew on
