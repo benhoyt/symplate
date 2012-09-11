@@ -1,5 +1,5 @@
 {% template entries, title %}
-{{ !render('inc/header', title) }}
+{{ !render('header', title) }}
 <h1>This is {{ title }}</h1>
 <p>This is a bunch of text just to test a whole bunch of text.</p>
 <p>This is another bunch of text just to test a whole bunch of text.</p>
@@ -9,4 +9,4 @@
     {{ !entry.html_body }}
 {% end for %}
 </ul>
-{{ !render('inc/footer') }}
+{{ !render('footer') }}
