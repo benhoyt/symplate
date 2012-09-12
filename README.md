@@ -22,7 +22,7 @@ So I ended up with a very direct Symplate-to-Python compilation process:
   `{% for x in lst: %}`
 * indentation decreases when you say `{% end %}`
 
-That's about all there is to it. All the rest is detail and syntactic sugar.
+That's about all there is to it. All the rest is detail.
 
 
 Hats off to bottle.py
@@ -182,7 +182,9 @@ acts as a comment, so you can say `{% end for %}` or `{% end if %}` if you
 like.
 
 A `:` (colon) at the end of a code block starts a code indentation block, just
-like in Python.
+like in Python. However, there's a special case for the `elif`, `else`,
+`except` and `finally` keywords -- they dedent for the line the keyword is on,
+and then indent again (just like you would when writing Python).
 
 
 Filters
