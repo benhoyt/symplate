@@ -15,7 +15,7 @@ class TestFiltering(utils.TestCase):
 {{ val }}
 {% filt = symplate.html_filter %}
 {{ val }}
-""", val='"'), u"'\"'\n&quot;")
+""", val='"'), u"'\"'\n&#34;")
 
     def test_raw(self):
         self.assertEqual(self.render("{% template %}{{ !'<b>' }}"), '<b>')

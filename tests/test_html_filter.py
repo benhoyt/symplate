@@ -21,7 +21,7 @@ class TestHtmlFilter(unittest.TestCase):
         self.assertEqual(html_filter(1234), '1234')
 
     def test_special_chars(self):
-        self.assertEqual(html_filter('foo &<>\'" bar'), 'foo &amp;&lt;&gt;&#39;&quot; bar')
+        self.assertEqual(html_filter('foo &<>\'" bar'), 'foo &amp;&lt;&gt;&#39;&#34; bar')
 
     def test_non_unicodeable(self):
         class NonUnicodeable(object):

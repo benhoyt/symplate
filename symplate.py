@@ -54,7 +54,7 @@ def html_filter(obj):
                .replace(u'<', u'&lt;')
                .replace(u'>', u'&gt;')
                .replace(u"'", u'&#39;')
-               .replace(u'"', u'&quot;'))
+               .replace(u'"', u'&#34;'))
 
 class Renderer(object):
     """Symplate renderer class. See __init__'s docs for more info."""
