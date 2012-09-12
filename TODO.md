@@ -1,4 +1,4 @@
-* FIX elif and similar indentation, need: 'elif', 'else', 'except', 'finally' treated specially
+* improve error handling line numbers and text
 * look at http://wiki.python.org/moin/Templating, particularly wheezy.template for speed
 * get rid of modify_path? it's slow-by-default behaviour
 * simplify os.walk/relpath stuff in _main?

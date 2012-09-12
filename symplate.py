@@ -218,8 +218,15 @@ def _render(_renderer, %s):
                         in_template = False
 
                 else:
+                    end_colon = not line.startswith('#') and line.endswith(':')
+                    if end_colon and line.startswith(
+                            ('elif', 'else', 'except', 'finally')):
+                        if not indent:
+                            raise Error('dedent keyword not allowed at top level',
+                                        get_line_num(pieces, i), '{%' + piece)
+                        indent = indent[:-4]
                     write(indent + line + '\n')
-                    if line.endswith(':') and not line.startswith('#'):
+                    if end_colon:
                         indent += '    '
 
             # eat EOL immediately after a closing %}

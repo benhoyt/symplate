@@ -11,7 +11,7 @@
 {% for entry in entries: %}
     {% if entry.url: %}
         <h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
-    {% end if %}{% else: %}
+    {% else: %}
         <h2>{{ entry.title.title() }}</h2>
     {% end if %}
     {{ !entry.html_body }}

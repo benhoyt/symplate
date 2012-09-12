@@ -62,5 +62,32 @@ class TestCodeBlocks(utils.TestCase):
         self.assertEqual(self.render('{% template %}a{% #comment %}\nb'), 'ab')
         self.assertEqual(self.render('{% template %}a{% #comment %}\n\nb'), 'a\nb')
 
+    def test_else_oneline(self):
+        t = '{% template x %}{% if x: %}t{% else: %}f{% end if %}'
+        self.assertEqual(self.render(t, True), 't')
+        self.assertEqual(self.render(t, False), 'f')
+
+    def test_else_multiline(self):
+        t = r"""
+{% template x %}
+{%
+if x == 0:
+    y = 'a'
+elif x == 1:
+    y = 'b'
+else:
+    y = 'c'
+end if
+%}{{ y }}"""
+        self.assertEqual(self.render(t, 0), 'a')
+        self.assertEqual(self.render(t, 1), 'b')
+        self.assertEqual(self.render(t, 2), 'c')
+        self.assertEqual(self.render(t, 3), 'c')
+
+    def test_dedent_at_top_level(self):
+        for word in ('elif x:', 'else:', 'except OSError:', 'except:', 'finally:'):
+            t = '{% template %}\n{% end %}\n{% ' + word + ' %}'
+            self.assertTemplateError(3, word, self.render, t)
+
 if __name__ == '__main__':
     unittest.main()
