@@ -1,5 +1,7 @@
 """Run all benchmarks."""
 
+# TODO: ensure compile() compiles included templates too
+
 from __future__ import with_statement
 
 import collections
@@ -22,8 +24,8 @@ def rel_dir(dirname):
     return os.path.abspath(os.path.join(os.path.dirname(__file__), dirname))
 
 class TemplateLanguage(object):
-    num_compiles = 1000
-    num_renders = 1000
+    num_compiles = 100
+    num_renders = 100
 
     def compile_main(self):
         return self.compile('main')
@@ -40,7 +42,7 @@ class TemplateLanguage(object):
 try:
     import symplate
 except ImportError:
-    warnings.warn("Can't import symplate, is symplate.py in your PYTHONPATH?")
+    warnings.warn("Can't import symplate, is it in your PYTHONPATH?")
     symplate = None
 if symplate:
     class Symplate(TemplateLanguage):
@@ -60,13 +62,13 @@ try:
     import Cheetah.Template as cheetah
     from Cheetah.Filters import WebSafe as cheetah_websafe
 except ImportError:
-    warnings.warn("Can't import Cheetah, is Cheetah in your PYTHONPATH?")
+    warnings.warn("Can't import Cheetah, is it in your PYTHONPATH?")
     cheetah = None
 if cheetah:
     cheetah.checkFileMtime(False)
 
     class Cheetah(TemplateLanguage):
-        num_compiles = 100
+        num_compiles = 10
 
         def __init__(self):
             self.template_dir = rel_dir('cheetah')
@@ -82,6 +84,25 @@ if cheetah:
             assert name == self.template_name
             params = dict(kwargs, template_dir=self.template_dir)
             return self.template(searchList=[params], filter=cheetah_websafe).respond()
+
+try:
+    import jinja2
+except ImportError:
+    warnings.warn("Can't import jinja2, is it in your PYTHONPATH?")
+    jinja2 = None
+if jinja2:
+    class Jinja2(TemplateLanguage):
+        def __init__(self):
+            loader = jinja2.FileSystemLoader(rel_dir('jinja2'))
+            self.env = jinja2.Environment(loader=loader, autoescape=True)
+
+        def compile(self, name):
+            self.template = self.env.get_template('main.tmpl')
+            self.template_name = name
+
+        def render(self, name, **kwargs):
+            assert name == self.template_name
+            return self.template.render(**kwargs)
 
 def main():
     language_classes = sorted((name, cls) for name, cls in globals().items()
