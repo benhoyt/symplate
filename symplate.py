@@ -11,6 +11,28 @@ import sys
 
 __version__ = '0.9'
 
+
+def html_filter(obj):
+    """Default output filter. Escapes special HTML/XML characters in obj. If
+    obj is None, return empty string. If obj is not a unicode string, convert
+    it to a unicode string first.
+    """
+    if not isinstance(obj, unicode):
+        if isinstance(obj, str):
+            # if it's a byte string, do the best we can (try converting from
+            # UTF-8, which is a superset of ASCII)
+            obj = unicode(obj, 'utf-8')
+        elif obj is None:
+            return u''
+        else:
+            obj = unicode(obj)
+    return (obj.replace(u'&', u'&amp;')
+               .replace(u'<', u'&lt;')
+               .replace(u'>', u'&gt;')
+               .replace(u"'", u'&#39;')
+               .replace(u'"', u'&#34;'))
+
+
 class Error(Exception):
     """A Symplate template or syntax error."""
 
@@ -36,25 +58,6 @@ class Error(Exception):
             text = text[:50] + '...'
         return 'symplate.Error(%r, %d, %r)' % (self.msg, self.line_num, text)
 
-def html_filter(obj):
-    """Default output filter. Escapes special HTML/XML characters in obj. If
-    obj is None, return empty string. If obj is not a unicode string, convert
-    it to a unicode string first.
-    """
-    if not isinstance(obj, unicode):
-        if isinstance(obj, str):
-            # if it's a byte string, do the best we can (try converting from
-            # UTF-8, which is a superset of ASCII)
-            obj = unicode(obj, 'utf-8')
-        elif obj is None:
-            return u''
-        else:
-            obj = unicode(obj)
-    return (obj.replace(u'&', u'&amp;')
-               .replace(u'<', u'&lt;')
-               .replace(u'>', u'&gt;')
-               .replace(u"'", u'&#39;')
-               .replace(u'"', u'&#34;'))
 
 class Renderer(object):
     """Symplate renderer class. See __init__'s docs for more info."""
@@ -176,7 +179,7 @@ class Renderer(object):
                 else:
                     msg = 'more than one %} after block'
                 raise Error(msg, get_line_num(pieces, i), '{%' + piece)
-            
+
             code, text = code_text
             left_brackets_in_code = '{{' in code
             if left_brackets_in_code or '}}' in code:
@@ -189,9 +192,9 @@ class Renderer(object):
             for line in code.splitlines():
                 line = line.strip()
                 if line.startswith(('template ', 'template\t')) or \
-                   line == 'template':
+                        line == 'template':
                     if got_template:
-                        raise Error("can't have multiple {% template %} directives",
+                        raise Error("can't have multiple template directives",
                                     get_line_num(pieces, i), '{%' + piece)
                     write("""
 def _render(_renderer, %s):
@@ -222,8 +225,9 @@ def _render(_renderer, %s):
                     if end_colon and line.startswith(
                             ('elif', 'else', 'except', 'finally')):
                         if not indent:
-                            raise Error('dedent keyword not allowed at top level',
-                                        get_line_num(pieces, i), '{%' + piece)
+                            raise Error(
+                                'dedent keyword not allowed at top level',
+                                get_line_num(pieces, i), '{%' + piece)
                         indent = indent[:-4]
                     write(indent + line + '\n')
                     if end_colon:
@@ -288,8 +292,8 @@ def _render(_renderer, %s):
 
         with open(names['symplate']) as f:
             template = unicode(f.read(), 'utf-8')
-        py_source = self._compile_string(
-                template, filename=os.path.abspath(names['symplate']))
+        symplate_name = os.path.abspath(names['symplate'])
+        py_source = self._compile_string(template, filename=symplate_name)
 
         # create intermediate and final output directories with __init__.py
         self._make_output_dir(self.output_dir)
@@ -343,15 +347,19 @@ def _render(_renderer, %s):
         output = module._render(self, *args, **kwargs)
         return output
 
+
 _default_renderer = Renderer()
+
 
 def compile(name):
     """Compile given template using the default Renderer instance."""
     return _default_renderer.compile(name)
 
+
 def render(name, *args, **kwargs):
     """Render given template using the default Renderer instance."""
     return _default_renderer.render(name, *args, **kwargs)
+
 
 def _main():
     import fnmatch
