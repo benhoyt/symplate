@@ -106,6 +106,7 @@ class Renderer(object):
         write = output.append
 
         def add_string(string):
+            """Add a write(string) to the output."""
             if not string:
                 return
             if len(string) > 50 and '\n' in string:
@@ -348,28 +349,30 @@ def _render(_renderer, %s):
         return output
 
 
-_default_renderer = Renderer()
+default_renderer = Renderer()
 
 
 def compile(name):
     """Compile given template using the default Renderer instance."""
-    return _default_renderer.compile(name)
+    return default_renderer.compile(name)
 
 
 def render(name, *args, **kwargs):
     """Render given template using the default Renderer instance."""
-    return _default_renderer.render(name, *args, **kwargs)
+    return default_renderer.render(name, *args, **kwargs)
 
 
-def _main():
-    import fnmatch
-    import optparse
-
-    usage = """usage: %prog [-h] [options] action [name|dir|glob]
+def main():
+    """Usage: symplate.py [-h] [options] action [name|dir|glob]
 
 Actions:
   compile   compile given template, directory or glob (relative to
-            TEMPLATE_DIR), default "*.symp\""""
+            TEMPLATE_DIR), default "*.symp\"
+"""
+    import fnmatch
+    import optparse
+
+    usage = main.__doc__.rstrip()
     version = 'Symplate ' + __version__
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option('-q', '--quiet', action='store_true',
@@ -436,4 +439,4 @@ Actions:
         renderer.compile(name)
 
 if __name__ == '__main__':
-    _main()
+    main()
