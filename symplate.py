@@ -89,6 +89,7 @@ class Renderer(object):
         self.check_mtime = check_mtime
         self.modify_path = modify_path
         self.preamble = preamble
+        self._module_cache = {}
 
     def get_default_filter(self, filename):
         """Return Python expression string to use as default filter for given
@@ -288,7 +289,7 @@ def _render(_renderer, %s):
             f.write('')
 
     def compile(self, name):
-        """Compile given template to .py in output directory."""
+        """Compile named template to .py in output directory."""
         names = self._get_filenames(name)
 
         with open(names['symplate']) as f:
@@ -317,8 +318,8 @@ def _render(_renderer, %s):
         remove_if_exists(py_basename + '.pyc')
         remove_if_exists(py_basename + '.pyo')
 
-    def render(self, name, *args, **kwargs):
-        """Render given template with given positional and keyword args."""
+    def _get_module(self, name):
+        """Import or compile and import named template and return module."""
         if self.modify_path:
             path_dir = os.path.abspath(os.path.join(self.output_dir, '..'))
             if path_dir not in sys.path:
@@ -345,8 +346,18 @@ def _render(_renderer, %s):
             self.compile(name)
             module = __import__(names['module'], fromlist=[names['import']])
 
-        output = module._render(self, *args, **kwargs)
-        return output
+        return module
+
+    def render(self, name, *args, **kwargs):
+        """Render named template with given positional and keyword args."""
+        if name in self._module_cache:
+            module = self._module_cache[name]
+        else:
+            module = self._get_module(name)
+            # only store in module cache if we're not checking mtimes
+            if not self.check_mtime:
+                self._module_cache[name] = module
+        return module._render(self, *args, **kwargs)
 
 
 default_renderer = Renderer()
