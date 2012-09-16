@@ -4,9 +4,9 @@ Symplate, the Simple pYthon teMPLATE renderer
 Symplate is the simplest and fastest Python templating language. How's that
 for a sales pitch?
 
-Seriously though, when I got frustrated with the complexities of
-[Cheetah](http://www.cheetahtemplate.org/), I started wondering just how
-simple a templating language could be.
+Seriously though, when I got frustrated with the complexities and slow
+rendering speed of [Cheetah](http://www.cheetahtemplate.org/), I started
+wondering just how simple a templating language could be.
 
 Could you just write templates in straight Python? It's not as bad as you'd
 think, but it's still pretty cumbersome. In templates, you really want string
@@ -65,15 +65,15 @@ this template takes in the `{% template ... %}` line, including the default
 parameter `title`.
 
 For simplicity, there's no special "include" directive -- you just `render()`
-a sub-template. Usually you want the `!` prefix meaning don't filter the
+a sub-template -- usually with the `!` prefix to mean don't filter the
 rendered output. The arguments passed to `render()`ed sub-templates are
 specified explicitly, so there's no yucky setting of globals when rendering
 included templates. (Note: `render` is set to the current Renderer instance's
 `render` function.)
 
-Note that `entry.html_body` contains pre-rendered HTML, so this expression is
-also prefixed with `!` -- it will output the HTML body as a raw, unescaped
-string.
+In this example, `entry.html_body` contains pre-rendered HTML, so this
+expression is also prefixed with `!` -- it will output the HTML body as a raw,
+unescaped string.
 
 Then `inc/header.symp` looks like this:
 
@@ -153,6 +153,9 @@ The `blog.symp` example above produces this in `blog.py`:
         _write(u'\n')
 
         return u''.join(_output)
+
+As you can see, apart from a tiny premable, it's about as fast and direct as
+it could possibly be (in pure Python).
 
 Basic Symplate syntax errors like mismatched `{%`'s are raised as
 `symplate.Error`s when the template is compiled. However, most Python
