@@ -360,19 +360,6 @@ def _render(_renderer, %s):
         return module._render(self, *args, **kwargs)
 
 
-default_renderer = Renderer()
-
-
-def compile(name):
-    """Compile given template using the default Renderer instance."""
-    return default_renderer.compile(name)
-
-
-def render(name, *args, **kwargs):
-    """Render given template using the default Renderer instance."""
-    return default_renderer.render(name, *args, **kwargs)
-
-
 def main():
     """Usage: symplate.py [-h] [options] action [name|dir|glob]
 
@@ -448,6 +435,7 @@ Actions:
             print 'compiling %s -> %s' % (filenames['symplate'],
                                           filenames['py'])
         renderer.compile(name)
+
 
 if __name__ == '__main__':
     main()
