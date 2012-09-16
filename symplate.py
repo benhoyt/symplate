@@ -62,14 +62,14 @@ class Error(Exception):
 class Renderer(object):
     """Symplate renderer class. See __init__'s docs for more info."""
 
-    def __init__(self, template_dir=None, output_dir=None, extension='.symp',
+    def __init__(self, template_dir, output_dir=None, extension='.symp',
                  check_mtime=False, modify_path=True, preamble=''):
         """Initialize a Renderer instance.
 
-        * template_dir: directory your Symplate source files are in, default
-                        is current directory + 'symplates'
+        * template_dir: directory your Symplate source files are in (the only
+                        required argument)
         * output_dir:   directory compiled template (.py) files should go
-                        into, default is current directory + 'symplouts'
+                        into, default is {template_dir}/../symplouts
         * extension:    file extension for templates (set to '' if you want to
                         specify explictly when calling render)
         * check_mtime:  True means check template file's mtime on render(),
@@ -79,11 +79,10 @@ class Renderer(object):
         * preamble:     extra code to include at top of compiled template,
                         such as imports
         """
-        if template_dir is None:
-            template_dir = os.path.abspath('symplates')
-        self.template_dir = template_dir
+        self.template_dir = os.path.abspath(template_dir)
         if output_dir is None:
-            output_dir = os.path.abspath('symplouts')
+            output_dir = os.path.abspath(os.path.join(self.template_dir, '..',
+                                                      'symplouts'))
         self.output_dir = output_dir
         self.extension = extension
         self.check_mtime = check_mtime
@@ -394,9 +393,8 @@ Actions:
         parser.error('invalid action: ' + action)
     name = args[1] if len(args) > 1 else '*.symp'
 
-    renderer = Renderer(template_dir=options.template_dir, extension='',
-                        output_dir=options.output_dir,
-                        preamble=options.preamble)
+    renderer = Renderer(options.template_dir, output_dir=options.output_dir,
+                        extension='', preamble=options.preamble)
 
     # build list of filenames based on path or glob
     filenames = renderer._get_filenames(name)

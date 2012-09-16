@@ -12,11 +12,11 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), 'symplates')
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'symplouts')
 
 class Renderer(symplate.Renderer):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('template_dir', TEMPLATE_DIR)
+    def __init__(self, **kwargs):
+        template_dir = kwargs.pop('template_dir', TEMPLATE_DIR)
         kwargs.setdefault('output_dir', OUTPUT_DIR)
         kwargs.setdefault('check_mtime', True)
-        super(Renderer, self).__init__(*args, **kwargs)
+        super(Renderer, self).__init__(template_dir, **kwargs)
 
 renderer = Renderer()
 

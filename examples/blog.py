@@ -4,12 +4,13 @@ import collections
 import os
 import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import symplate
 
 BlogEntry = collections.namedtuple('BlogEntry', 'title url html_body')
 
 renderer = symplate.Renderer(
-        template_dir=os.path.join(os.path.dirname(__file__), 'symplates'),
+        os.path.join(os.path.dirname(__file__), 'symplates'),
         output_dir=os.path.join(os.path.dirname(__file__), 'symplouts'),
         check_mtime=True)
 

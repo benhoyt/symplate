@@ -58,7 +58,7 @@ if symplate:
     class Symplate(TemplateLanguage):
         def __init__(self):
             self.renderer = symplate.Renderer(
-                    template_dir=rel_dir('symplate'),
+                    rel_dir('symplate'),
                     output_dir=rel_dir('symplate_output'),
                     modify_path=False)
 

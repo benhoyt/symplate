@@ -95,13 +95,14 @@ To compile and render the main blog template in one fell swoop, set `entries`
 to a list of blog entries with the `url`, `title`, and `html_body` attributes,
 and you're away:
 
-    renderer = symplate.Renderer()
+    renderer = symplate.Renderer(template_dir)
     output = renderer.render('blog', entries, title="Ben's Blog")
 
 You can customize the Renderer to specify a different output directory, or to
 turn on checking of template file mtimes for debugging. For example:
 
-    renderer = symplate.Renderer(output_dir='out', check_mtime=DEBUG)
+    renderer = symplate.Renderer(template_dir, output_dir='out',
+                                 check_mtime=DEBUG)
 
     def homepage():
         entries = load_blog_entries()
