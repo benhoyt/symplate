@@ -10,6 +10,7 @@ import sys
 import timeit
 import warnings
 
+
 BlogEntry = collections.namedtuple('BlogEntry', 'title url html_body')
 
 TITLE = 'My Blog'
@@ -20,9 +21,11 @@ ENTRIES = [
 ]
 ENTRIES *= 10  # To give the render test a bit more to chew on
 
+
 def rel_dir(dirname):
     """Return full directory name of dirname from this file's directory."""
     return os.path.abspath(os.path.join(os.path.dirname(__file__), dirname))
+
 
 class TemplateLanguage(object):
     num_compiles = 10
@@ -48,6 +51,7 @@ class TemplateLanguage(object):
         timings['render'] = min(timeit.repeat(self.render, number=self.num_renders)) / float(self.num_renders)
         return timings
 
+
 try:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
     import symplate
@@ -67,6 +71,7 @@ if symplate:
 
         def render(self):
             return self.renderer.render('main', title=TITLE, entries=ENTRIES)
+
 
 try:
     import Cheetah.Template as cheetah
@@ -93,6 +98,7 @@ if cheetah:
             params = dict(title=TITLE, entries=ENTRIES, template_dir=self.template_dir)
             return self.template(searchList=[params], filter=cheetah_websafe).respond()
 
+
 try:
     import jinja2
 except ImportError:
@@ -114,6 +120,33 @@ if jinja2:
         def render(self):
             return self.template.render(title=TITLE, entries=ENTRIES)
 
+
+try:
+    import mako.lookup
+except ImportError:
+    warnings.warn("Can't import mako, is it in your PYTHONPATH?")
+    mako = None
+if mako:
+    class Mako(TemplateLanguage):
+        def __init__(self):
+            self.compile_lookup = mako.lookup.TemplateLookup(
+                    directories=[rel_dir('mako')],
+                    default_filters=['h'],
+                    collection_size=0)
+            self.render_lookup = mako.lookup.TemplateLookup(
+                    directories=[rel_dir('mako')],
+                    default_filters=['h'])
+
+        def compile(self):
+            return self.compile_lookup.get_template('main.tmpl')
+
+        def setup_render(self):
+            self.template = self.render_lookup.get_template('main.tmpl')
+
+        def render(self):
+            return self.template.render(title=TITLE, entries=ENTRIES)
+
+
 def main():
     language_classes = sorted((name, cls) for name, cls in globals().items()
                               if isinstance(cls, type) and
@@ -123,9 +156,14 @@ def main():
         language = cls()
         timings = language.benchmark()
         print '%.20s %.3f %.3f' % (name, timings['compile'] * 1000, timings['render'] * 1000)
-        with open(os.path.join(rel_dir(''), name.lower() + '.html'), 'w') as f:
+
+        output_dir = rel_dir('output')
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        with open(os.path.join(output_dir, name.lower() + '.html'), 'w') as f:
             language.setup_render()
             f.write(language.render().encode('utf-8'))
+
 
 if __name__ == '__main__':
     main()
