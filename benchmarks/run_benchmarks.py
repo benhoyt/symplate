@@ -147,6 +147,40 @@ if mako:
             return self.template.render(title=TITLE, entries=ENTRIES)
 
 
+try:
+    import wheezy.template
+except OSError:
+    warnings.warn("Can't import wheezy.template, is it in your PYTHONPATH?")
+    wheezy = None
+if wheezy:
+    # include this here so there's not a dependency on symplate.html_filter
+    def wheezy_html_filter(s):
+        return (s.replace(u'&', u'&amp;')
+                 .replace(u'<', u'&lt;')
+                 .replace(u'>', u'&gt;')
+                 .replace(u"'", u'&#39;')
+                 .replace(u'"', u'&#34;'))
+
+    class Wheezy(TemplateLanguage):
+        def __init__(self):
+            self.engine = wheezy.template.Engine(
+                    loader=wheezy.template.FileLoader([rel_dir('wheezy')]),
+                    extensions=[wheezy.template.CoreExtension()])
+            self.engine.global_vars.update({'h': wheezy_html_filter})
+
+        def compile(self):
+            self.engine.remove('main.tmpl')
+            self.engine.remove('header.tmpl')
+            self.engine.remove('footer.tmpl')
+            return self.engine.get_template('main.tmpl')
+
+        def setup_render(self):
+            self.template = self.engine.get_template('main.tmpl')
+
+        def render(self):
+            return self.template.render({'title': TITLE, 'entries': ENTRIES})
+
+
 def main():
     language_classes = sorted((name, cls) for name, cls in globals().items()
                               if isinstance(cls, type) and
