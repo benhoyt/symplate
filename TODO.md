@@ -1,5 +1,4 @@
 * investigate whitespace in output (also for performance), especially between two {%...%} directives
-* consider removing non-string handling from html_filter to simplify/speed up (caller can do this)
 * improve error handling line numbers and text
 * look at http://wiki.python.org/moin/Templating, particularly wheezy.template for speed
 * simplify os.walk/relpath stuff in _main?
