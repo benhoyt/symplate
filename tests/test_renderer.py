@@ -55,7 +55,7 @@ class TestRenderer(utils.TestCase):
             sys.path = saved_path
 
     def test_preamble(self):
-        renderer = utils.Renderer(preamble='def preamble_func(): return 42\n')
+        renderer = utils.Renderer(preamble="def preamble_func(): return '42'\n")
         self.assertEquals(self.render('{% template %}{{ preamble_func() }}', _renderer=renderer), '42')
 
 if __name__ == '__main__':

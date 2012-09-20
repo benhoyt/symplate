@@ -153,20 +153,17 @@ except OSError:
     warnings.warn("Can't import wheezy.template, is it in your PYTHONPATH?")
     wheezy = None
 if wheezy:
-    # include this here so there's not a dependency on symplate.html_filter
-    def wheezy_html_filter(s):
-        return (s.replace(u'&', u'&amp;')
-                 .replace(u'<', u'&lt;')
-                 .replace(u'>', u'&gt;')
-                 .replace(u"'", u'&#39;')
-                 .replace(u'"', u'&#34;'))
+    # include this here so there's not a dependency on wheezy.html
+    def wheezy_escape_html(s):
+        return s.replace('&', '&amp;').replace('<', '&lt;').replace(
+                         '>', '&gt;').replace('"', '&quot;')
 
     class Wheezy(TemplateLanguage):
         def __init__(self):
             self.engine = wheezy.template.Engine(
                     loader=wheezy.template.FileLoader([rel_dir('wheezy')]),
                     extensions=[wheezy.template.CoreExtension()])
-            self.engine.global_vars.update({'h': wheezy_html_filter})
+            self.engine.global_vars.update({'h': wheezy_escape_html})
 
         def compile(self):
             self.engine.remove('main.tmpl')

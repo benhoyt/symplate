@@ -196,9 +196,9 @@ Filters
 ### The default filter
 
 The default filter used by `{{ ... }}` output expressions is `html_filter`,
-which converts non-string objects to unicode and escapes HTML/XML special
-characters. It escapes `&`, `<`, `>`, `'`, and `"`, so it's good for both HTML
-content as well as attribute values.
+which escapes HTML/XML special characters in the given string. It escapes `&`,
+`<`, `>`, `'`, and `"`, so it's good for both HTML content as well as
+attribute values.
 
 For example, `render('test', thing='A & B', title="Symplate's simple")` on
 this template:
@@ -264,8 +264,8 @@ always encoded in UTF-8, and internally Symplate builds the template as
 unicode.
 
 `render()` always returns a unicode string, and it's best to pass unicode
-strings as arguments to `render()`, but you can also pass byte strings encoded
-as UTF-8 -- the default filter `html_filter` will handle both.
+strings as arguments to `render()`, but you can also pass ASCII byte strings,
+as the default filter `html_filter` will handle both.
 
 
 Comments

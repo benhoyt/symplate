@@ -12,25 +12,23 @@ import sys
 __version__ = '0.9'
 
 
-def html_filter(obj):
-    """Default output filter. Escapes special HTML/XML characters in obj. If
-    obj is None, return empty string. If obj is not a unicode string, convert
-    it to a unicode string first.
+def html_filter(s):
+    """Escape special HTML/XML characters in given ASCII or unicode string
+    (this is the default output filter in templates).
     """
-    if not isinstance(obj, unicode):
-        if isinstance(obj, str):
-            # if it's a byte string, do the best we can (try converting from
-            # UTF-8, which is a superset of ASCII)
-            obj = unicode(obj, 'utf-8')
-        elif obj is None:
-            return u''
-        else:
-            obj = unicode(obj)
-    return (obj.replace(u'&', u'&amp;')
-               .replace(u'<', u'&lt;')
-               .replace(u'>', u'&gt;')
-               .replace(u"'", u'&#39;')
-               .replace(u'"', u'&#34;'))
+    # Slight performance boost by feeding right string type into replace()
+    if isinstance(s, unicode):
+        return (s.replace(u'&', u'&amp;')
+                 .replace(u'<', u'&lt;')
+                 .replace(u'>', u'&gt;')
+                 .replace(u"'", u'&#39;')
+                 .replace(u'"', u'&#34;'))
+    else:
+        return (s.replace('&', '&amp;')
+                 .replace('<', '&lt;')
+                 .replace('>', '&gt;')
+                 .replace("'", '&#39;')
+                 .replace('"', '&#34;'))
 
 
 class Error(Exception):
