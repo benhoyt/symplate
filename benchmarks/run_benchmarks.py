@@ -1,7 +1,5 @@
 """Run all benchmarks."""
 
-# TODO: ensure compile() compiles included templates too, or at least that it's the same for everyone (render too)
-
 from __future__ import with_statement
 
 import collections
@@ -67,7 +65,8 @@ if symplate:
                     modify_path=False)
 
         def compile(self):
-            return self.renderer.compile('main')
+            for name in ('header', 'main', 'footer'):
+                self.renderer.compile(name)
 
         def render(self):
             return self.renderer.render('main', title=TITLE, entries=ENTRIES)
@@ -87,12 +86,13 @@ if cheetah:
             self.template_dir = rel_dir('cheetah')
 
         def compile(self):
-            file_name = os.path.join(self.template_dir, 'main.tmpl')
-            return cheetah.Template.compile(
-                    file=file_name, cacheCompilationResults=False, useCache=False)
+            for name in ('header', 'main', 'footer'):
+                file_name = os.path.join(self.template_dir, name + '.tmpl')
+                cheetah.Template.compile(file=file_name, cacheCompilationResults=False, useCache=False)
 
         def setup_render(self):
-            self.template = self.compile()
+            file_name = os.path.join(self.template_dir, 'main.tmpl')
+            self.template = cheetah.Template.compile(file=file_name, cacheCompilationResults=True, useCache=True)
 
         def render(self):
             params = dict(title=TITLE, entries=ENTRIES, template_dir=self.template_dir)
@@ -112,9 +112,12 @@ if jinja2:
             self.render_env = jinja2.Environment(loader=loader, autoescape=True, trim_blocks=True)
 
         def compile(self):
-            return self.compile_env.get_template('main.tmpl')
+            for name in ('header', 'main', 'footer'):
+                self.compile_env.get_template(name + '.tmpl')
 
         def setup_render(self):
+            for name in ('header', 'main', 'footer'):
+                self.render_env.get_template(name + '.tmpl')
             self.template = self.render_env.get_template('main.tmpl')
 
         def render(self):
@@ -138,9 +141,12 @@ if mako:
                     default_filters=['h'])
 
         def compile(self):
-            return self.compile_lookup.get_template('main.tmpl')
+            for name in ('header', 'main', 'footer'):
+                self.compile_lookup.get_template(name + '.tmpl')
 
         def setup_render(self):
+            for name in ('header', 'main', 'footer'):
+                self.render_lookup.get_template(name + '.tmpl')
             self.template = self.render_lookup.get_template('main.tmpl')
 
         def render(self):
@@ -166,12 +172,14 @@ if wheezy:
             self.engine.global_vars.update({'h': wheezy_escape_html})
 
         def compile(self):
-            self.engine.remove('main.tmpl')
-            self.engine.remove('header.tmpl')
-            self.engine.remove('footer.tmpl')
-            return self.engine.get_template('main.tmpl')
+            for name in ('header', 'main', 'footer'):
+                self.engine.remove(name + '.tmpl')
+            for name in ('header', 'main', 'footer'):
+                self.engine.get_template(name + '.tmpl')
 
         def setup_render(self):
+            for name in ('header', 'main', 'footer'):
+                self.engine.get_template(name + '.tmpl')
             self.template = self.engine.get_template('main.tmpl')
 
         def render(self):
