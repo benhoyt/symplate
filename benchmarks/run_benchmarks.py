@@ -11,7 +11,7 @@ import warnings
 
 BlogEntry = collections.namedtuple('BlogEntry', 'title url html_body')
 
-TITLE = 'My Blog'
+TITLE = u'My Blog'
 ENTRIES = [
     BlogEntry(u'<Sorry>', u'/sorry/?a=b&c=d', u'<p>Sorry for the lack of updates.</p>'),
     BlogEntry(u'My life & story', None, u'<p>Once upon a time...</p>'),
@@ -184,6 +184,58 @@ if wheezy:
 
         def render(self):
             return self.template.render({'title': TITLE, 'entries': ENTRIES})
+
+
+def hand_coded_filter(s):
+    return (s.replace(u'&', u'&amp;')
+             .replace(u'<', u'&lt;')
+             .replace(u'>', u'&gt;')
+             .replace(u"'", u'&#39;')
+             .replace(u'"', u'&#34;'))
+
+class HandCoded(TemplateLanguage):
+    def compile(self):
+        pass
+
+    def header(self, _writes, filt, title):
+        _writes((u'<html>\n<head>\n    <meta charset="UTF-8" />\n    <title>',
+                 filt(title),
+                 u'</title>\n</head>\n<body>\n<h1>',
+                 filt(title),
+                 u'</h1>\n\n'))
+
+    def footer(self, _writes):
+        _writes((u'\n</body>\n</html>',))
+
+    def render(self, title=TITLE, entries=ENTRIES):
+        filt = hand_coded_filter
+        _output = []
+        _writes = _output.extend
+
+        self.header(_writes, filt, title)
+        def paragraph(word):
+            _writes((u'<p>This is ',
+                     filt(word),
+                     u' bunch of text just to test a whole bunch of text.</p>\n'))
+        paragraph(u'a')
+        paragraph(u'another')
+        paragraph(u'yet another')
+        _writes((u'\n',))
+        for entry in entries:
+            if entry.url:
+                _writes((u'<h2><a href="',
+                         filt(entry.url),
+                         u'">',
+                         filt(entry.title.title()),
+                         u'</a></h2>\n'))
+            else:
+                _writes((u'<h2>',
+                         filt(entry.title.title()),
+                         u'</h2>\n'))
+            _writes((entry.html_body, u'\n'))
+        self.footer(_writes)
+
+        return u''.join(_output)
 
 
 def main():
