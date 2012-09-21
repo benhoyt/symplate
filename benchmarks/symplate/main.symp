@@ -1,6 +1,5 @@
 {% template entries, title %}
 {{ !render('header', title) }}
-
 {% def paragraph(word): %}
 <p>This is {{ word }} bunch of text just to test a whole bunch of text.</p>
 {% end def %}
@@ -10,11 +9,11 @@
 
 {% for entry in entries: %}
     {% if entry.url: %}
-        <h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
+<h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
     {% else: %}
-        <h2>{{ entry.title.title() }}</h2>
+<h2>{{ entry.title.title() }}</h2>
     {% end if %}
-    {{ !entry.html_body }}
+{{ !entry.html_body }}
 {% end for %}
 
 {{ !render('footer') }}

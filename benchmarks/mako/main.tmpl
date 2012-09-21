@@ -1,7 +1,6 @@
-<%include file='header.tmpl' />
-
-<%def name="paragraph(word)">
-<p>This is ${word} bunch of text just to test a whole bunch of text.</p>
+<%include file='header.tmpl' />\
+<%def name="paragraph(word)">\
+<p>This is ${word} bunch of text just to test a whole bunch of text.</p>\
 </%def>
 ${paragraph('a')}
 ${paragraph('another')}
@@ -9,11 +8,11 @@ ${paragraph('yet another')}
 
 % for entry in entries:
     % if entry.url:
-        <h2><a href="${entry.url}">${entry.title.title()}</a></h2>
+<h2><a href="${entry.url}">${entry.title.title()}</a></h2>
     % else:
-        <h2>${entry.title.title()}</h2>
+<h2>${entry.title.title()}</h2>
     % endif
-    ${entry.html_body|n}
+${entry.html_body|n}
 % endfor
 
 <%include file='footer.tmpl' />

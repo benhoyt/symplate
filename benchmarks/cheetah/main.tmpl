@@ -1,7 +1,7 @@
 #include $template_dir + "/header.tmpl"
 
 #def paragraph($word)
-    <p>This is $word bunch of text just to test a whole bunch of text.</p>
+<p>This is $word bunch of text just to test a whole bunch of text.</p>#slurp
 #end def
 #filter Filter
 $paragraph('a')
@@ -11,12 +11,12 @@ $paragraph('yet another')
 
 #for $entry in $entries:
     #if $entry.url
-        <h2><a href="$entry.url">$entry.title.title()</a></h2>
+<h2><a href="$entry.url">$entry.title.title()</a></h2>
     #else
-        <h2>$entry.title.title()</h2>
+<h2>$entry.title.title()</h2>
     #end if
     #filter Filter
-    $entry.html_body
+$entry.html_body
     #end filter
 #end for
 

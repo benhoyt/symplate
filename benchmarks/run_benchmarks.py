@@ -108,8 +108,8 @@ if jinja2:
     class Jinja2(TemplateLanguage):
         def __init__(self):
             loader = jinja2.FileSystemLoader(rel_dir('jinja2'))
-            self.compile_env = jinja2.Environment(loader=loader, autoescape=True, cache_size=0)
-            self.render_env = jinja2.Environment(loader=loader, autoescape=True)
+            self.compile_env = jinja2.Environment(loader=loader, autoescape=True, cache_size=0, trim_blocks=True)
+            self.render_env = jinja2.Environment(loader=loader, autoescape=True, trim_blocks=True)
 
         def compile(self):
             return self.compile_env.get_template('main.tmpl')
@@ -179,21 +179,34 @@ if wheezy:
 
 
 def main():
-    language_classes = sorted((name, cls) for name, cls in globals().items()
-                              if isinstance(cls, type) and
-                                 issubclass(cls, TemplateLanguage) and
-                                 cls is not TemplateLanguage)
+    language_classes = [(name, cls) for name, cls in globals().items()
+                        if isinstance(cls, type) and
+                           issubclass(cls, TemplateLanguage) and
+                           cls is not TemplateLanguage]
+
+    results = []
+    output = None
     for name, cls in language_classes:
         language = cls()
         timings = language.benchmark()
-        print '%.20s %.3f %.3f' % (name, timings['compile'] * 1000, timings['render'] * 1000)
+        results.append((name, timings['compile'], timings['render']))
 
         output_dir = rel_dir('output')
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        with open(os.path.join(output_dir, name.lower() + '.html'), 'w') as f:
+        with open(os.path.join(output_dir, name.lower() + '.html'), 'wb') as f:
             language.setup_render()
-            f.write(language.render().encode('utf-8'))
+            rendering = language.render().replace('\r\n', '\n')
+            f.write(rendering.encode('utf-8'))
+            if output is None:
+                output = (name, rendering.strip())
+            elif output[1] != rendering.strip():
+                print 'ERROR: output from %s and %s differ' % (name, output[0])
+
+    print 'Engine    compile (ms)  render (ms)'
+    print '-----------------------------------'
+    for name, compile_time, render_time in sorted(results, key=lambda r: r[2]):
+        print '%-10s %11.3f %12.3f' % (name, compile_time * 1000, render_time * 1000)
 
 
 if __name__ == '__main__':

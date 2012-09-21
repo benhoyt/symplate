@@ -2,7 +2,7 @@
 @include('header.tmpl')
 
 @def paragraph(word):
-<p>This is @word!h bunch of text just to test a whole bunch of text.</p>
+<p>This is @word!h bunch of text just to test a whole bunch of text.</p>\
 @end
 @paragraph('a')
 @paragraph('another')
@@ -10,11 +10,11 @@
 
 @for entry in entries:
     @if entry.url:
-        <h2><a href="@entry.url!h">@entry.title.title()!h</a></h2>
+<h2><a href="@entry.url!h">@entry.title.title()!h</a></h2>
     @else:
-        <h2>@entry.title.title()!h</h2>
+<h2>@entry.title.title()!h</h2>
     @end
-    @entry.html_body
+@entry.html_body
 @end
 
 @include('footer.tmpl')
