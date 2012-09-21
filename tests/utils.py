@@ -41,7 +41,6 @@ class TestCase(unittest.TestCase):
 
     def render(self, template, *args, **kwargs):
         """Compile and render template source string with given args."""
-        _strip = kwargs.pop('_strip', True)
         _renderer = kwargs.pop('_renderer', renderer)
         _increment = kwargs.pop('_increment', 1)
 
@@ -59,10 +58,7 @@ class TestCase(unittest.TestCase):
                                 name, TestCase._template_num)
         self._write_template(_renderer, name, template)
 
-        output = _renderer.render(name, *args, **kwargs)
-        if _strip:
-            output = output.strip()
-        return output
+        return _renderer.render(name, *args, **kwargs)
 
     def assertTemplateError(self, line_num, text_contains, func, *args, **kwargs):
         """Ensure func(*args, **kwargs) raises symplate.Error, with given 

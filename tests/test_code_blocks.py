@@ -25,7 +25,7 @@ class TestCodeBlocks(utils.TestCase):
     end
 %}
 {{ func() }}
-"""), 'bar')
+"""), 'bar\n')
 
     def test_end(self):
         t = "{% template %}{% for c in 'abc': %}{{ c }}"

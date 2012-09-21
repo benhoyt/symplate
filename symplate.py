@@ -235,6 +235,8 @@ def _render(_renderer, %s):
             # eat EOL immediately after a closing %}
             if text.startswith('\n'):
                 text = text[1:]
+            # eat spaces and tabs at beginning of {% line
+            text = text.rstrip(' \t')
 
             # ignore whitespace before {% template ... %}, if inside template
             # then write output

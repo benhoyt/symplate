@@ -37,8 +37,13 @@ class TestTemplateDirective(utils.TestCase):
         self.assertEqual(self.render('{% template v %}{{v}}', v='V'), 'V')
         self.assertEqual(self.render('{% template\tv %}{{v}}', v='V'), 'V')
 
-    def test_surrounding_whitespace(self):
-        self.assertEqual(self.render('\n\n {% template %}\n\n ', _strip=False), '\n ')
+    def test_strip_eol_after(self):
+        self.assertEqual(self.render("\n\n {% template %} \n {{ 'a' }}"), ' \n a')
+        self.assertEqual(self.render("\n\n {% template %}\n\n {{ 'a' }}"), '\n a')
+
+    def test_strip_whitespace_on_line_before(self):
+        self.assertEqual(self.render("{% template %}\n  \t\t  {% x = 42 %}"), '')
+        self.assertEqual(self.render("{% template %}\n  \n\n  {% x = 42 %}"), '  \n\n')
 
     def test_empty(self):
         self.assertEqual(self.render('{% template %}'), '')
