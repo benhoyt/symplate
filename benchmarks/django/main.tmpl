@@ -1,0 +1,11 @@
+{% include 'header.tmpl' %}
+{# kind of cheating, but Django is so slow anyway, so give it a chance #}
+<p>This is a bunch of text just to test a whole bunch of text.</p>
+<p>This is another bunch of text just to test a whole bunch of text.</p>
+<p>This is yet another bunch of text just to test a whole bunch of text.</p>
+{% for entry in entries %}{% if entry.url %}
+<h2><a href="{{ entry.url }}">{{ entry.title|title }}</a></h2>{% else %}
+<h2>{{ entry.title|title }}</h2>{% endif %}
+{{ entry.html_body|safe }}{% endfor %}
+
+{% include 'footer.tmpl' %}

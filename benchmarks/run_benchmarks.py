@@ -95,7 +95,7 @@ if cheetah:
             self.template = cheetah.Template.compile(file=file_name, cacheCompilationResults=True, useCache=True)
 
         def render(self):
-            params = dict(title=TITLE, entries=ENTRIES, template_dir=self.template_dir)
+            params = {'title': TITLE, 'entries': ENTRIES, 'template_dir': self.template_dir}
             return self.template(searchList=[params], filter=cheetah_websafe).respond()
 
 
@@ -186,6 +186,28 @@ if wheezy:
             return self.template.render({'title': TITLE, 'entries': ENTRIES})
 
 
+try:
+    import django
+    import django.conf
+    django.conf.settings.configure(TEMPLATE_DIRS=[rel_dir('django')])
+    import django.template
+    import django.template.loader
+except ImportError:
+    warnings.warn("Can't import django, is it in your PYTHONPATH?")
+    django = None
+if django:
+    class Django(TemplateLanguage):
+        def compile(self):
+            django.template.loader.get_template('main.tmpl')
+
+        def setup_render(self):
+            self.template = django.template.loader.get_template('main.tmpl')
+
+        def render(self):
+            params = {'title': TITLE, 'entries': ENTRIES}
+            return self.template.render(django.template.Context(params))
+
+
 def hand_coded_filter(s):
     return (s.replace(u'&', u'&amp;')
              .replace(u'<', u'&lt;')
@@ -197,22 +219,27 @@ class HandCoded(TemplateLanguage):
     def compile(self):
         pass
 
-    def header(self, _writes, filt, title):
+    def header(self, title):
+        filt = hand_coded_filter
+        _output = []
+        _writes = _output.extend
         _writes((u'<html>\n<head>\n    <meta charset="UTF-8" />\n    <title>',
                  filt(title),
                  u'</title>\n</head>\n<body>\n<h1>',
                  filt(title),
                  u'</h1>\n\n'))
+        return u''.join(_output)
 
-    def footer(self, _writes):
-        _writes((u'\n</body>\n</html>',))
+    def footer(self):
+        return u'\n</body>\n</html>'
 
     def render(self, title=TITLE, entries=ENTRIES):
         filt = hand_coded_filter
         _output = []
+        _write = _output.append
         _writes = _output.extend
 
-        self.header(_writes, filt, title)
+        _write(self.header(title))
         def paragraph(word):
             _writes((u'<p>This is ',
                      filt(word),
@@ -220,7 +247,7 @@ class HandCoded(TemplateLanguage):
         paragraph(u'a')
         paragraph(u'another')
         paragraph(u'yet another')
-        _writes((u'\n',))
+        _write(u'\n')
         for entry in entries:
             if entry.url:
                 _writes((u'<h2><a href="',
@@ -233,7 +260,7 @@ class HandCoded(TemplateLanguage):
                          filt(entry.title.title()),
                          u'</h2>\n'))
             _writes((entry.html_body, u'\n'))
-        self.footer(_writes)
+        _write(self.footer())
 
         return u''.join(_output)
 
