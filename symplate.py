@@ -339,11 +339,13 @@ def _render(_renderer, %s):
 
         # try to import the compiled template; if it doesn't exist (it's never
         # been compiled), compile it and then re-import
+        import_args = (names['module'], globals(), locals(),
+                       [names['import']])
         try:
-            module = __import__(names['module'], fromlist=[names['import']])
+            module = __import__(*import_args)
         except ImportError:
             self.compile(name)
-            module = __import__(names['module'], fromlist=[names['import']])
+            module = __import__(*import_args)
 
         return module
 
