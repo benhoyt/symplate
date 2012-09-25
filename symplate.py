@@ -79,9 +79,12 @@ class Renderer(object):
         self.output_dir = output_dir
         self.extension = extension
         self.check_mtime = check_mtime
-        self.modify_path = modify_path
         self.preamble = preamble
         self._module_cache = {}
+
+        if modify_path:
+            path_dir = os.path.abspath(os.path.join(output_dir, '..'))
+            sys.path.insert(0, path_dir)
 
     def get_default_filter(self, filename):
         """Return Python expression string to use as default filter for given
@@ -315,11 +318,6 @@ def _render(_renderer, %s):
 
     def _get_module(self, name):
         """Import or compile and import named template and return module."""
-        if self.modify_path:
-            path_dir = os.path.abspath(os.path.join(self.output_dir, '..'))
-            if path_dir not in sys.path:
-                sys.path.insert(0, path_dir)
-
         names = self._get_filenames(name)
         if self.check_mtime:
             # compile the template source to .py if it has changed

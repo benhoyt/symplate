@@ -61,8 +61,7 @@ if symplate:
         def __init__(self):
             self.renderer = symplate.Renderer(
                     rel_dir('symplate'),
-                    output_dir=rel_dir('symplate_output'),
-                    modify_path=False)
+                    output_dir=rel_dir('symplate_output'))
 
         def compile(self):
             for name in ('header', 'main', 'footer'):
