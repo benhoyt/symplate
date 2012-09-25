@@ -60,7 +60,7 @@ class TestCase(unittest.TestCase):
 
         return _renderer.render(name, *args, **kwargs)
 
-    def assertTemplateError(self, line_num, text_contains, func, *args, **kwargs):
+    def assertTemplateError(self, line_num, line_contains, func, *args, **kwargs):
         """Ensure func(*args, **kwargs) raises symplate.Error, with given 
         line number and text if not None.
         """
@@ -69,8 +69,8 @@ class TestCase(unittest.TestCase):
         except symplate.Error, error:
             if line_num is not None:
                 self.assertEqual(line_num, error.line_num)
-            if text_contains is not None:
-                self.assertTrue(text_contains in error.text,
-                        'text %r not in %r' % (text_contains, error.text))
+            if line_contains is not None:
+                self.assertTrue(line_contains in error.line,
+                        'text %r not in %r' % (line_contains, error.line))
         else:
             self.assertTrue(False, 'symplate.Error not raised')

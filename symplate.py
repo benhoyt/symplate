@@ -34,27 +34,21 @@ def html_filter(s):
 class Error(Exception):
     """A Symplate template or syntax error."""
 
-    def __init__(self, msg, line_num, text):
+    def __init__(self, msg, template, line_num):
         self.msg = msg
+        self.template = template
         self.line_num = line_num
-        self.text = text
+        lines = template.splitlines()
+        if 0 <= line_num - 1 < len(lines):
+            self.line = lines[line_num - 1]
+        else:
+            self.line = ''
 
     def __str__(self):
-        line_msg = ', line %d' % self.line_num
-        non_blanks = [l.strip() for l in self.text.splitlines() if l.strip()]
-        if non_blanks:
-            text_msg = ': ' + non_blanks[0]
-            if len(non_blanks) > 1:
-                text_msg += ' ...'
-        else:
-            text_msg = ''
-        return self.msg + line_msg + text_msg
+        return '%s, line %d: %s' % (self.msg, self.line_num, self.line.strip())
 
     def __repr__(self):
-        text = self.text
-        if len(text) > 50:
-            text = text[:50] + '...'
-        return 'symplate.Error(%r, %d, %r)' % (self.msg, self.line_num, text)
+        return 'symplate.Error<%r>' % str(self)
 
 
 class Renderer(object):
@@ -95,7 +89,7 @@ class Renderer(object):
         """
         return 'symplate.html_filter'
 
-    def _compile_text(self, text, indent, outer_pieces, outer_i):
+    def _compile_text(self, text, indent, template, line_num):
         """Compile the text parts of a template (the parts not inside {%...%}
         blocks) at given indent level and return list of Python source output
         lines.
@@ -125,6 +119,7 @@ class Renderer(object):
         for i, piece in enumerate(pieces):
             if i == 0:
                 add_string(piece)
+                line_num += piece.count('\n')
                 continue
 
             expr_string = piece.split('}}')
@@ -133,8 +128,7 @@ class Renderer(object):
                     msg = 'no }} at end of expression'
                 else:
                     msg = 'more than one }} after expression'
-                previous = '{{'.join(outer_pieces[:outer_i + 1] + pieces[:i])
-                raise Error(msg, previous.count('\n') + 1, '{{' + piece)
+                raise Error(msg, template, line_num)
             expr, string = expr_string
             expr = expr.strip()
 
@@ -146,6 +140,8 @@ class Renderer(object):
                 add_write('filt(%s)' % expr)
             add_string(string)
 
+            line_num += piece.count('\n')
+
         output = []
         if writes:
             output.append(indent + '_writes((\n')
@@ -156,8 +152,8 @@ class Renderer(object):
 
     def _compile_string(self, template, filename=None):
         """Compile template string into Python source string."""
-        def get_line_num(pieces, i):
-            return '{%'.join(pieces[:i]).count('\n') + 1
+        def error(msg):
+            raise Error(msg, template, line_num)
 
         output = []
         write = output.append
@@ -167,41 +163,37 @@ class Renderer(object):
         write(self.preamble)
 
         indent = ''
-        pieces = template.split('{%')
         in_template = False
         got_template = False
+        line_num = 1
+        pieces = template.split('{%')
         for i, piece in enumerate(pieces):
             if i == 0:
                 if piece.strip():
                     # output found before any {% ... %} blocks
-                    raise Error('output must be inside {% template ... %}',
-                                1, piece)
+                    error('output must be inside {% template ... %}')
+                line_num += piece.count('\n')
                 continue
 
             code_text = piece.split('%}')
             if len(code_text) != 2:
                 if len(code_text) < 2:
-                    msg = 'no %} at end of block'
+                    error('no %} at end of block')
                 else:
-                    msg = 'more than one %} after block'
-                raise Error(msg, get_line_num(pieces, i), '{%' + piece)
+                    error('more than one %} after block')
 
             code, text = code_text
             left_brackets_in_code = '{{' in code
             if left_brackets_in_code or '}}' in code:
-                if left_brackets_in_code:
-                    msg = '{{ not valid in code block'
-                else:
-                    msg = '}} not valid in code block'
-                raise Error(msg, get_line_num(pieces, i), '{%' + piece)
+                brackets = '{{' if left_brackets_in_code else '}}'
+                error('%s not valid in code block' % brackets)
 
-            for line in code.splitlines():
-                line = line.strip()
+            for line_with_end in code.splitlines(True):
+                line = line_with_end.strip()
                 if line.startswith(('template ', 'template\t')) or \
                         line == 'template':
                     if got_template:
-                        raise Error("can't have multiple template directives",
-                                    get_line_num(pieces, i), '{%' + piece)
+                        error("can't have multiple template directives")
                     write("""
 def _render(_renderer, %s):
     filt = %s
@@ -211,16 +203,14 @@ def _render(_renderer, %s):
 
 """ % (line[9:], self.get_default_filter(filename)))
                     if indent:
-                        raise Error('{% template ... %} must be at top level',
-                                    get_line_num(pieces, i), '{%' + piece)
+                        error('{% template ... %} must be at top level')
                     indent += '    '
                     in_template = True
                     got_template = True
 
                 elif line.startswith(('end ', 'end\t')) or line == 'end':
                     if not indent:
-                        raise Error('extra {% end %}',
-                                    get_line_num(pieces, i), '{%' + piece)
+                        error('extra {% end %}')
                     indent = indent[:-4]
                     if in_template and not indent:
                         write("\n    return u''.join(_output)\n")
@@ -231,37 +221,35 @@ def _render(_renderer, %s):
                     if end_colon and line.startswith(
                             ('elif', 'else', 'except', 'finally')):
                         if not indent:
-                            raise Error(
-                                'dedent keyword not allowed at top level',
-                                get_line_num(pieces, i), '{%' + piece)
+                            error('dedent keyword not allowed at top level')
                         indent = indent[:-4]
                     write(indent + line + '\n')
                     if end_colon:
                         indent += '    '
 
+                line_num += line_with_end.count('\n')
+
             # eat EOL immediately after a closing %}
             if text.startswith('\n'):
                 text = text[1:]
+                line_num += 1
             # eat spaces and tabs at beginning of {% line
             text = text.rstrip(' \t')
 
             # ignore whitespace before {% template ... %}, if inside template
             # then write output
             if in_template or text.strip():
-                text_output = self._compile_text(text, indent, pieces, i)
+                text_output = self._compile_text(text, indent, template,
+                                                 line_num)
                 if text_output and not in_template:
-                    raise Error('output must be inside {% template ... %}',
-                                get_line_num(pieces, i + 1), text)
+                    error('output must be inside {% template ... %}')
                 output.extend(text_output)
+            line_num += text.count('\n')
 
         if not got_template:
-            lines = '{%'.join(pieces).splitlines() or '\n'
-            raise Error('no {% template ... %} directive',
-                        len(lines), lines[-1])
+            error('no {% template ... %} directive')
         if in_template and len(indent) != 4 or not in_template and indent:
-            lines = '{%'.join(pieces).splitlines() or '\n'
-            raise Error('template must end at top level',
-                        len(lines), lines[-1])
+            error('template must end at top level')
         if in_template:
             write("\n    return u''.join(_output)\n")
 

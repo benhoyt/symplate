@@ -39,8 +39,8 @@ class TestCodeBlocks(utils.TestCase):
         self.assertTemplateError(2, 'bar', self.render, '{% template %}a{% end foo %}\n{% end bar %}')
 
     def test_contains_output_expression(self):
-        self.assertTemplateError(2, 'for', self.render, "{% template %}\n{% for x in y: {{ %}{% end %}")
-        self.assertTemplateError(2, 'for', self.render, "{% template %}\n{% for x in y: }} %}{% end %}")
+        self.assertTemplateError(2, 'for', self.render, '{% template %}\n{% for x in y: {{ %}{% end %}')
+        self.assertTemplateError(2, 'for', self.render, '{% template %}\n{% for x in y: }} %}{% end %}')
 
     def test_python_name_error(self):
         self.assertRaises(NameError, self.render, '{% template %}{% asdf %}')

@@ -48,7 +48,7 @@ class TestTemplateDirective(utils.TestCase):
     def test_empty(self):
         self.assertEqual(self.render('{% template %}'), '')
         self.assertTemplateError(1, None, self.render, '')
-        self.assertTemplateError(2, None, self.render, '\n\n')
+        self.assertTemplateError(3, None, self.render, '\n\n')
 
     def test_no_directive(self):
         self.assertTemplateError(2, '#two', self.render, '{% #one %}\n{% #two %}')
