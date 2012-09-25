@@ -1,0 +1,19 @@
+%include header.tmpl title=title
+%def paragraph(word):
+<p>This is {{word}} bunch of text just to test a whole bunch of text.</p>
+%end def
+
+%paragraph('a')
+%paragraph('another')
+%paragraph('yet another')
+
+%for entry in entries:
+    %if entry.url:
+<h2><a href="{{entry.url}}">{{entry.title.title()}}</a></h2>
+    %else:
+<h2>{{entry.title.title()}}</h2>
+    %end
+{{!entry.html_body}}
+%end
+
+%include footer.tmpl

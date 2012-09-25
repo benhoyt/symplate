@@ -208,6 +208,28 @@ if django:
             return self.template.render(django.template.Context(params))
 
 
+try:
+    import bottle
+except ImportError:
+    warnings.warn("Can't import bottle, is it in your PYTHONPATH?")
+    bottle = None
+if bottle:
+    class Bottle(TemplateLanguage):
+        def __init__(self):
+            self.lookup = [rel_dir('bottle')]
+
+        def compile(self):
+            for name in ('header', 'main', 'footer'):
+                template = bottle.SimpleTemplate(name=name + '.tmpl', lookup=self.lookup)
+                template.co
+
+        def setup_render(self):
+            self.template = bottle.SimpleTemplate(name='main.tmpl', lookup=self.lookup)
+
+        def render(self):
+            return self.template.render(title=TITLE, entries=ENTRIES)
+
+
 def hand_coded_filter(s):
     return (s.replace(u'&', u'&amp;')
              .replace(u'<', u'&lt;')
