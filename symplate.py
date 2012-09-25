@@ -381,8 +381,6 @@ def main():
 Compile templates in specified template_dir, or all templates if
 template_names not given
 """
-
-    import fnmatch
     import optparse
 
     usage = main.__doc__.rstrip()
