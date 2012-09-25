@@ -134,23 +134,29 @@ The `blog.symp` example above produces this in `blog.py`:
         filt = symplate.html_filter
         render = _renderer.render
         _output = []
-        _write = _output.append
+        _writes = _output.extend
 
-        _write(render('inc/header', title))
-        _write(u'\n<h1>This is ')
-        _write(filt(title))
-        _write(u'</h1>\n')
+        _writes((
+            render('inc/header', title),
+            u'\n<h1>This is ',
+            filt(title),
+            u'</h1>\n',
+        ))
         for entry in entries:
-            _write(u'    <h2><a href="')
-            _write(filt(entry.url))
-            _write(u'">')
-            _write(filt(entry.title.title()))
-            _write(u'</a></h2>\n    ')
-            _write(entry.html_body)
-            _write(u'\n')
-        _write(u'</ul>\n')
-        _write(render('inc/footer'))
-        _write(u'\n')
+            _writes((
+                u'    <h2><a href="',
+                filt(entry.url),
+                u'">',
+                filt(entry.title.title()),
+                u'</a></h2>\n    ',
+                entry.html_body,
+                u'\n',
+            ))
+        _writes((
+            u'</ul>\n',
+            render('inc/footer'),
+            u'\n',
+        ))
 
         return u''.join(_output)
 
