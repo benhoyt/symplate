@@ -286,9 +286,11 @@ def _render(_renderer, %s):
         with open(init_py_name, 'w') as f:
             f.write('')
 
-    def compile(self, name):
+    def compile(self, name, verbose=False):
         """Compile named template to .py in output directory."""
         names = self._get_filenames(name)
+        if verbose:
+            print 'compiling %s -> %s' % (names['symplate'], names['py'])
 
         with open(names['symplate']) as f:
             template = unicode(f.read(), 'utf-8')
@@ -315,6 +317,24 @@ def _render(_renderer, %s):
         py_basename = os.path.splitext(names['py'])[0]
         remove_if_exists(py_basename + '.pyc')
         remove_if_exists(py_basename + '.pyo')
+
+    def compile_all(self, recursive=True, verbose=False):
+        """Compile all templates in template_dir to .py files."""
+        for root, dirs, files in os.walk(self.template_dir):
+            for base_name in files:
+                if not base_name.endswith(self.extension):
+                    continue
+                full_name = os.path.join(root, base_name)
+                prefix_len = len(self.template_dir)
+                if not self.template_dir.endswith(os.sep):
+                    prefix_len += 1
+                name = full_name[prefix_len:]
+                if self.extension:
+                    name = name[:-len(self.extension)]
+                self.compile(name, verbose=verbose)
+
+            if not recursive:
+                del dirs[:]
 
     def _get_module(self, name):
         """Import or compile and import named template and return module."""
@@ -356,79 +376,49 @@ def _render(_renderer, %s):
 
 
 def main():
-    """Usage: symplate.py [-h] [options] action [name|dir|glob]
+    """Usage: symplate.py [-h] [options] template_dir [template_names]
 
-Actions:
-  compile   compile given template, directory or glob (relative to
-            TEMPLATE_DIR), default "*.symp\"
+Compile templates in specified template_dir, or all templates if
+template_names not given
 """
+
     import fnmatch
     import optparse
 
     usage = main.__doc__.rstrip()
     version = 'Symplate ' + __version__
     parser = optparse.OptionParser(usage=usage, version=version)
-    parser.add_option('-q', '--quiet', action='store_true',
-                      help="don't print compiling information")
-    parser.add_option('-n', '--non-recursive', action='store_true',
-                      help="don't recurse into subdirectories")
-    parser.add_option('-t', '--template-dir', default='symplates',
-                      help='directory your Symplate files are in')
-    parser.add_option('-o', '--output-dir', default='symplouts',
+    parser.add_option('-o', '--output-dir',
                       help='compiled template output directory, '
-                           'default "%default"')
+                           'default {template_dir}/../symplouts')
+    parser.add_option('-e', '--extension', default='.symp',
+                      help='file extension for templates, default %default')
     parser.add_option('-p', '--preamble', default='',
                       help='template preamble (see docs), default ""')
+    parser.add_option('-q', '--quiet', action='store_true',
+                      help="don't print what we're doing")
+    parser.add_option('-n', '--non-recursive', action='store_true',
+                      help="don't recurse into subdirectories")
     options, args = parser.parse_args()
 
     if len(args) <= 0:
-        parser.error('no action given')
-    action = args[0]
-    if action != 'compile':
-        # currently the only supported action
-        parser.error('invalid action: ' + action)
-    name = args[1] if len(args) > 1 else '*.symp'
+        parser.error('no template_dir given')
+    template_dir = args[0]
+    template_names = args[1:]
 
-    renderer = Renderer(options.template_dir, output_dir=options.output_dir,
-                        extension='', preamble=options.preamble)
+    extension = options.extension
+    if not extension.startswith('.'):
+        extension = '.' + extension
+    renderer = Renderer(template_dir, output_dir=options.output_dir,
+                        extension=extension, preamble=options.preamble)
 
-    # build list of filenames based on path or glob
-    filenames = renderer._get_filenames(name)
-    if os.path.isfile(filenames['symplate']):
-        names = [name]
+    if template_names:
+        for name in template_names:
+            renderer.compile(name, verbose=not options.quiet)
     else:
-        if os.path.isdir(filenames['symplate']):
-            path = filenames['symplate']
-            pattern = '*.symp'
-        else:
-            path, pattern = os.path.split(filenames['symplate'])
-            if not path:
-                path = '.'
-        names = []
-        path = os.path.normpath(path)
-        for root, dirs, files in os.walk(path):
-            for f in files:
-                if not fnmatch.fnmatch(f, pattern):
-                    continue
-                # mess around so we get a list of relatives template filenames
-                # (os.path.relpath only available in Python 2.6+)
-                abs_path = os.path.normpath(os.path.join(root, f))
-                template_dir = os.path.normpath(options.template_dir)
-                if not template_dir.endswith(os.sep):
-                    template_dir += os.sep
-                name = abs_path
-                if name.startswith(template_dir):
-                    name = name[len(template_dir):]
-                names.append(name)
-            if options.non_recursive:
-                del dirs[:]
-
-    for name in names:
-        if not options.quiet:
-            filenames = renderer._get_filenames(name)
-            print 'compiling %s -> %s' % (filenames['symplate'],
-                                          filenames['py'])
-        renderer.compile(name)
+        template_names = renderer.compile_all(
+            recursive=not options.non_recursive,
+            verbose=not options.quiet)
 
 
 if __name__ == '__main__':
