@@ -59,9 +59,7 @@ except ImportError:
 if symplate:
     class Symplate(TemplateLanguage):
         def __init__(self):
-            self.renderer = symplate.Renderer(
-                    rel_dir('symplate'),
-                    output_dir=rel_dir('symplate_output'))
+            self.renderer = symplate.Renderer(rel_dir('symplate'))
 
         def compile(self):
             for name in ('header', 'main', 'footer'):
