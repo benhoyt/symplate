@@ -16,7 +16,7 @@ def html_filter(s):
     """Escape special HTML/XML characters in given ASCII or unicode string
     (this is the default output filter in templates).
     """
-    # Slight performance boost by feeding right string type into replace()
+    # slight performance boost by feeding correct string type into replace()
     if isinstance(s, unicode):
         return (s.replace(u'&', u'&amp;')
                  .replace(u'<', u'&lt;')
@@ -35,6 +35,7 @@ class Error(Exception):
     """A Symplate template or syntax error."""
 
     def __init__(self, msg, template, line_num):
+        super(Error, self).__init__(msg, template, line_num)
         self.msg = msg
         self.template = template
         self.line_num = line_num
@@ -334,13 +335,13 @@ def _render(_renderer, %s):
 
         # try to import the compiled template; if it doesn't exist (it's never
         # been compiled), compile it and then re-import
-        import_args = (names['module'], globals(), locals(),
-                       [names['import']])
         try:
-            module = __import__(*import_args)
+            module = __import__(names['module'], globals(), locals(),
+                                [names['import']])
         except ImportError:
             self.compile(name)
-            module = __import__(*import_args)
+            module = __import__(names['module'], globals(), locals(),
+                                [names['import']])
 
         return module
 
