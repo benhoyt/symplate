@@ -1,4 +1,3 @@
-* if simple, use _output.extend when writing multiple strings
 * improve error handling line numbers and text
 * simplify os.walk/relpath stuff in _main?
   - perhaps add a compile_all to Renderer instead

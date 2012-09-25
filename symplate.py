@@ -98,10 +98,10 @@ class Renderer(object):
     def _compile_text(self, text, indent, outer_pieces, outer_i):
         """Compile the text parts of a template (the parts not inside {%...%}
         blocks) at given indent level and return list of Python source output
-        strings.
+        lines.
         """
-        output = []
-        write = output.append
+        writes = []
+        add_write = writes.append
 
         def add_string(string):
             """Add a write(string) to the output."""
@@ -111,15 +111,15 @@ class Renderer(object):
                 # put long, multi-line text blocks inside raw """ strings
                 # (but be sure to allow literal triple quotes to work
                 chunks = string.split('"""')
-                write('%s_write(' % indent)
+                output = []
                 for i, chunk in enumerate(chunks):
                     if chunk:
-                        write('ur"""%s""" ' % chunk)
+                        output.append('ur"""%s""" ' % chunk)
                     if i + 1 < len(chunks):
-                        write('u\'"""\' ')
-                write(')\n')
+                        output.append('u\'"""\' ')
+                add_write(''.join(output))
             else:
-                write('%s_write(%r)\n' % (indent, string))
+                add_write(repr(string))
 
         pieces = text.split('{{')
         for i, piece in enumerate(pieces):
@@ -140,10 +140,17 @@ class Renderer(object):
 
             if expr.startswith('!'):
                 expr = expr[1:].lstrip()
-                write('%s_write(%s)\n' % (indent, expr))
-            else:
-                write('%s_write(filt(%s))\n' % (indent, expr))
+                if expr:
+                    add_write(expr)
+            elif expr:
+                add_write('filt(%s)' % expr)
             add_string(string)
+
+        output = []
+        if writes:
+            output.append(indent + '_writes((\n')
+            output.extend('%s    %s,\n' % (indent, w) for w in writes)
+            output.append(indent + '))\n')
 
         return output
 
@@ -200,7 +207,7 @@ def _render(_renderer, %s):
     filt = %s
     render = _renderer.render
     _output = []
-    _write = _output.append
+    _writes = _output.extend
 
 """ % (line[9:], self.get_default_filter(filename)))
                     if indent:

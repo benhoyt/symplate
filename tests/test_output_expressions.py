@@ -42,10 +42,10 @@ class TestOutputExpressions(utils.TestCase):
         self.assertTemplateError(2, 'bar', self.render, '{% template %}\n{{ bar }} }}')
 
     def test_empty(self):
-        self.assertRaises(TypeError, self.render, '{% template %}{{ }}')
+        self.assertEqual(self.render('{% template %}{{ }}'), '')
 
     def test_empty_raw(self):
-        self.assertRaises(TypeError, self.render, '{% template %}{{ ! }}')
+        self.assertEqual(self.render('{% template %}{{ ! }}'), '')
 
     def test_outside_template(self):
         self.assertTemplateError(1, 'foo', self.render, 'foo')
