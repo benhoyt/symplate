@@ -363,15 +363,15 @@ def _render(_renderer, %s):
 
         return module
 
-    def render(self, name, *args, **kwargs):
+    def render(self, _name, *args, **kwargs):
         """Render named template with given positional and keyword args."""
-        if name in self._module_cache:
-            module = self._module_cache[name]
+        if _name in self._module_cache:
+            module = self._module_cache[_name]
         else:
-            module = self._get_module(name)
+            module = self._get_module(_name)
             # only store in module cache if we're not checking mtimes
             if not self.check_mtime:
-                self._module_cache[name] = module
+                self._module_cache[_name] = module
         return module._render(self, *args, **kwargs)
 
 
