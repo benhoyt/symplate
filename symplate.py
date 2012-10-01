@@ -334,7 +334,7 @@ def _render(_renderer, %s):
                 self.compile(name, verbose=verbose)
 
             if not recursive:
-                del dirs[:]
+                dirs[:] = []
 
     def _get_module(self, name):
         """Import or compile and import named template and return module."""
