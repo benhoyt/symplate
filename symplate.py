@@ -56,21 +56,27 @@ class Renderer(object):
     """Symplate renderer class. See __init__'s docs for more info."""
 
     def __init__(self, template_dir, output_dir=None, extension='.symp',
-                 check_mtime=False, modify_path=True, preamble=''):
+                 check_mtime=False, modify_path=True, preamble='',
+                 default_filter='symplate.html_filter'):
         """Initialize a Renderer instance.
 
-        * template_dir: directory your Symplate source files are in (the only
-                        required argument)
-        * output_dir:   directory compiled template (.py) files should go
-                        into, default is {template_dir}/../symplouts
-        * extension:    file extension for templates (set to '' if you want to
-                        specify explictly when calling render)
-        * check_mtime:  True means check template file's mtime on render(),
-                        which is slower and usually only used for debugging
-        * modify_path:  True means add output_dir/.. to sys.path for importing
-                        compiled template
-        * preamble:     extra code to include at top of compiled template,
-                        such as imports
+        * template_dir:   directory your Symplate source files are in (the
+                          only required argument)
+        * output_dir:     directory compiled template (.py) files should go
+                          into, default is {template_dir}/../symplouts
+        * extension:      file extension for templates (set to '' if you want
+                          to specify explictly when calling render)
+        * check_mtime:    True means check template file's mtime on render(),
+                          which is slower and usually only used for debugging
+        * modify_path:    True means add output_dir/.. to sys.path for
+                          importing compiled template
+        * preamble:       extra code to include at top of compiled template,
+                          such as imports
+        * default_filter: if a string, use directly as Python expression for
+                          default filter; otherwise this must be a function
+                          that takes a single filename argument (e.g., if you
+                          want to use the file extension to determine the
+                          default filter)
         """
         self.template_dir = os.path.abspath(template_dir)
         if output_dir is None:
@@ -80,18 +86,19 @@ class Renderer(object):
         self.extension = extension
         self.check_mtime = check_mtime
         self.preamble = preamble
-        self._module_cache = {}
+        self.default_filter = default_filter
 
+        self._module_cache = {}
         if modify_path:
             path_dir = os.path.abspath(os.path.join(output_dir, '..'))
             sys.path.insert(0, path_dir)
 
-    def get_default_filter(self, filename):
-        """Return Python expression string to use as default filter for given
-        template filename. Override this in subclasses to do fancy stuff like
-        determine filter based on file extension.
-        """
-        return 'symplate.html_filter'
+    def _get_default_filter(self, filename):
+        """Return Python expression string to use as default filter."""
+        if isinstance(self.default_filter, basestring):
+            return self.default_filter
+        else:
+            return self.default_filter(filename)
 
     def _compile_text(self, text, indent, template, line_num):
         """Compile the text parts of a template (the parts not inside {%...%}
@@ -205,7 +212,7 @@ def _render(_renderer, %s):
     _output = []
     _writes = _output.extend
 
-""" % (line[9:], self.get_default_filter(filename)))
+""" % (line[9:], self._get_default_filter(filename)))
                     if indent:
                         error('{% template ... %} must be at top level')
                     indent += '    '
@@ -287,7 +294,9 @@ def _render(_renderer, %s):
             f.write('')
 
     def compile(self, name, verbose=False):
-        """Compile named template to .py in output directory."""
+        """Compile named template to .py in output directory. Print what we're
+        compiling iff verbose is True.
+        """
         names = self._get_filenames(name)
         if verbose:
             print 'compiling %s -> %s' % (names['symplate'], names['py'])
@@ -319,7 +328,10 @@ def _render(_renderer, %s):
         remove_if_exists(py_basename + '.pyo')
 
     def compile_all(self, recursive=True, verbose=False):
-        """Compile all templates in template_dir to .py files."""
+        """Compile all templates in template_dir to .py files. Recurse into
+        subdirectories iff recursive is True. Print what we're compiling iff
+        verbose is True.
+        """
         for root, dirs, files in os.walk(self.template_dir):
             for base_name in files:
                 if not base_name.endswith(self.extension):

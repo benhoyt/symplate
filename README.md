@@ -241,22 +241,27 @@ If you need to change back to the default filter (`html_filter`), just say:
 
 ### Changing the default filter
 
-You can change the default filter by subclassing `Renderer` and overriding
-`get_default_filter()`. It's a function which is passed the template filename
-as its single argument, so you can use the filename or extension to do clever
-things if you want. By default it simply returns the string
-`'symplate.html_filter'`, but you could do something like this:
+You can change the default filter by passing `Renderer` the `default_filter`
+argument. If this is a string, it's used directly for setting the filter, as
+per the above:
 
-    class SmartRenderer(symplate.Renderer):
-        def __init__(self, *args, **kwargs):
-            super(SmartRenderer, self).__init__(*args, **kwargs)
-            self.preamble += 'import json\n'
+    # this default filter will make everything uppercase
+    renderer = symplate.Renderer(default_filter='lambda s: s.upper()')
 
-        def get_default_filter(self, filename):
-            if filename.lower().endswith('.js.symp'):
-                return 'json.dumps'
-            else:
-                return 'symplate.html_filter'
+If it's not a string, it must be a function which takes a single `filename`
+(the template filename) as its argument. This is useful when, for example, you
+want to determine the default filter based on the template's file extension.
+A simple example:
+
+    # this default filter will use json.dumps() for .js.symp files and the
+    # normal HTML filter for other files
+    def get_default_filter(self, filename):
+        if filename.lower().endswith('.js.symp'):
+            return 'json.dumps'
+        else:
+            return 'symplate.html_filter'
+    renderer = symplate.Renderer(default_filter=get_default_filter,
+                                 preamble='import json\n')
 
 Note the modified `premable` so the compiled template has the `json` module
 available.

@@ -20,17 +20,22 @@ class TestFiltering(utils.TestCase):
     def test_raw(self):
         self.assertEqual(self.render("{% template %}{{ !'<b>' }}"), '<b>')
 
-    def test_override_default_filter(self):
-        filenames = set()
-        class OverrideRenderer(utils.Renderer):
-            def get_default_filter(self, filename):
-                filenames.add(filename)
-                return 'lambda s: s.upper()'
-        renderer = OverrideRenderer()
+    def test_override_default_filter_string(self):
+        renderer = utils.Renderer(default_filter='lambda s: s.upper()')
         self.assertEqual(self.render("{% template %}{{ 'a&z' }}", _renderer=renderer), 'A&Z')
-        self.assertEqual(self.render("{% template %}{{ 'z&a' }}", _renderer=renderer), 'Z&A')
-        # at least test that filenames were different
-        self.assertEqual(len(filenames), 2)
+
+    def test_override_default_filter_function(self):
+        filenames = []
+        def my_filter(filename):
+            filenames.append(filename)
+            return 'lambda s: s.lower()'
+        renderer = utils.Renderer(default_filter=my_filter)
+        self.assertEqual(self.render("{% template %}{{ 'A&Z' }}", _renderer=renderer), 'a&z')
+        self.assertEqual(self.render("{% template %}{{ 'Z&A' }}", _renderer=renderer), 'z&a')
+        # at least test that filenames were different, and that they end with .symp
+        self.assertEqual(len(set(filenames)), 2)
+        self.assertTrue(filenames[0].endswith('.symp'))
+        self.assertTrue(filenames[1].endswith('.symp'))
 
 if __name__ == '__main__':
     unittest.main()
