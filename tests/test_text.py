@@ -4,6 +4,11 @@ import unittest
 
 import utils
 
+LONG_STRING = r"""This is a longer string
+which definitely should
+be broken, and it should
+should work fine, as should\nescapes."""
+
 class TestText(utils.TestCase):
     def test_short_string(self):
         self.assertEqual(self.render('{% template %}short'), 'short')
@@ -12,10 +17,7 @@ class TestText(utils.TestCase):
                          'longer but not multiline and quick brown foxes jump over lazy dogs')
 
     def test_long_string(self):
-        content = r"""This is a longer string
-which definitely should
-be broken, and it should
-should work fine, as should\nescapes."""
+        content = LONG_STRING
         self.assertEqual(self.render('{% template %}' + content), content)
         content = content.replace(' it ', ' """ ')
         self.assertEqual(self.render('{% template %}' + content), content)
@@ -24,6 +26,12 @@ should work fine, as should\nescapes."""
 
     def test_before_after_output(self):
         self.assertEqual(self.render('{% template %}a{{"b"}}c'), 'abc')
+
+    def test_quotes(self):
+        content = '"' + LONG_STRING + '"'
+        self.assertEqual(self.render('{% template %}' + content), content)
+        content = '""' + LONG_STRING + '""'
+        self.assertEqual(self.render('{% template %}' + content), content)
 
 if __name__ == '__main__':
     unittest.main()

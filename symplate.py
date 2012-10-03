@@ -119,7 +119,12 @@ class Renderer(object):
                 output = []
                 for i, chunk in enumerate(chunks):
                     if chunk:
-                        output.append('ur"""%s""" ' % chunk)
+                        if chunk.endswith('""'):
+                            output.append('ur"""%s""" \'""\' ' % chunk[:-2])
+                        elif chunk.endswith('"'):
+                            output.append('ur"""%s""" \'"\' ' % chunk[:-1])
+                        else:
+                            output.append('ur"""%s""" ' % chunk)
                     if i + 1 < len(chunks):
                         output.append('u\'"""\' ')
                 add_write(''.join(output))
