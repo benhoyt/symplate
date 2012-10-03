@@ -44,6 +44,7 @@ class TestTemplateDirective(utils.TestCase):
     def test_strip_whitespace_on_line_before(self):
         self.assertEqual(self.render("{% template %}\n  \t\t  {% x = 42 %}"), '')
         self.assertEqual(self.render("{% template %}\n  \n\n  {% x = 42 %}"), '  \n\n')
+        self.assertEqual(self.render("{% template %}  \t\t  {% x = 42 %}"), '  \t\t  ')
 
     def test_empty(self):
         self.assertEqual(self.render('{% template %}'), '')

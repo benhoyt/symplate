@@ -240,12 +240,14 @@ def _render(_renderer, %s):
 
                 line_num += line_with_end.count('\n')
 
+            # eat spaces and tabs at beginning of {% line
+            eol_pos = text.rfind('\n')
+            if eol_pos >= 0 and text[eol_pos + 1:].isspace():
+                text = text.rstrip(' \t')
             # eat EOL immediately after a closing %}
             if text.startswith('\n'):
                 text = text[1:]
                 line_num += 1
-            # eat spaces and tabs at beginning of {% line
-            text = text.rstrip(' \t')
 
             # ignore whitespace before {% template ... %}, if inside template
             # then write output
