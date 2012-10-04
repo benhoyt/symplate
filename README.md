@@ -1,19 +1,21 @@
 Symplate, the Simple pYthon teMPLATE renderer
 =============================================
 
-Symplate is the simplest and fastest Python templating language. How's that
-for a sales pitch?
+Symplate is one of the simplest and fastest Python templating languages.
 
-Seriously though, when I got frustrated with the complexities and slow
-rendering speed of [Cheetah](http://www.cheetahtemplate.org/), I started
-wondering just how simple a templating language could be.
 
-Could you just write templates in straight Python? It's not as bad as you'd
-think, but it's still pretty cumbersome. In templates, you really want string
-output to be the default, whereas in Python, code is the default, and strings
-have to be wrapped in quotes. Plus, you don't get auto-escaping.
+Background
+----------
 
-So I ended up with a very direct Symplate-to-Python compilation process:
+[*Skip the background, show me an example!*](#basic-usage)
+
+When I got frustrated with the complexities and slow rendering speed of
+[Cheetah](http://www.cheetahtemplate.org/), I started wondering just how
+simple a templating language could be.
+
+It's somewhat painful to write templates in pure Python -- code and text are
+hard to intersperse, and you don't get auto-escaping. But why not a KISS
+template-to-Python translator? Enter Symplate:
 
 * `text` becomes `_write('text')`
 * `{{ expr }}` becomes `_write(filt(expr))`
@@ -25,23 +27,63 @@ So I ended up with a very direct Symplate-to-Python compilation process:
 That's about all there is to it. All the rest is detail.
 
 
-Hats off to bottle.py
----------------------
+Who uses Symplate?
+------------------
 
-Literally a few days after I wrote a draft version of Symplate, I saw a
-reference to [Bottle](http://bottlepy.org) on Hacker News, and discovered the
-author of that had almost exactly the same idea (no doubt some time earlier).
-I thought of it independently, honest! Perhaps a good argument against
-software patents...
+Only me ... so far. It's my experiment. But there's no reason you can't: it's
+a proper library, and fairly well tested. I "ported" my
+[GiftyWeddings.com](http://giftyweddings.com/) website from Cheetah to
+Symplate, and it's working very well.
 
-However, after seeing Bottle, one thing I did steal was its use of `!` to
-denote raw output. It seemed cleaner than my initial idea of passing
-`raw=True` as a parameter to the filter, as in `{{ foo, raw=True }}`.
 
-And there are many other good templating languages available for Python now.
-Not least of which is Mako, whose philosophy is very similar to Symplate's:
-*Python is a great scripting language. Don't reinvent the wheel... your
-templates can handle it!*
+Why use Symplate?
+-----------------
+
+Well, if you care about **raw performance** or **simplicity of
+implementation**, Symplate might be for you. I care about both, and I haven't
+needed some of the extra features other systems provide, such as sandboxed
+execution. If you want a Porshe, use Symplate. If you'd prefer a Volvo or BMW,
+I'd recommend [Jinja2](http://jinja.pocoo.org/docs/) or
+[Mako](http://www.makotemplates.org/).
+
+Symplate is dead simple: a couple of pages of code translate your templates to
+Python `.py` files, and `render()` imports and executes those.
+
+Symplate's also about as fast as a pure-Python templating language can be.
+Partly *because* it's simple, it produces Python code as tight as you'd write
+it by hand.
+
+
+Isn't worrying about performance silly?
+---------------------------------------
+
+Yes, [worrying about the performance of your template engine is
+silly](http://www.codeirony.com/?p=9). Well, sometimes. But when you're doing
+zero database requests and your "business logic" is pretty tight, template
+rendering is all that's left. And Cheetah (not to mention Django!) are
+particlarly slow.
+
+If you're running a large-scale website and you're caching things so that
+template rendering *is* your bottleneck ... then if you can take your
+rendering time down from 100ms to 20ms, you can run your website on 1/5th the
+number of servers.
+
+So how fast is Symplate? About as fast as you can hand-code Python. Here's the
+Symplate benchmark showing compile and render times for some of the fast or
+popular template languages.
+
+Times are normalized to the HandCoded render time (TODO):
+
+    Engine    compile (ms)  render (ms)
+    -----------------------------------
+    HandCoded        0.000        0.107
+    Symplate         1.385        0.120
+    Wheezy           3.214        0.145
+    Bottle           1.093        0.277
+    Mako             6.567        0.415
+    Jinja2           7.149        0.590
+    Cheetah         13.299        0.644
+    Django           0.839        2.451
 
 
 Basic usage
@@ -60,7 +102,7 @@ Symplate. Our main template is `blog.symp`:
     </ul>
     {{ !render('inc/footer') }}
 
-This is Python, so everything's explicit. We explicitly specify the parameters
+In Python fashion, everything's explicit. We explicitly specify the parameters
 this template takes in the `{% template ... %}` line, including the default
 parameter `title`.
 
@@ -332,22 +374,21 @@ all your templates to Python code. Straight from the command line help:
 
     Usage: symplate.py [-h] [options] action [name|dir|glob]
 
-    Actions:
-      compile   compile given template, directory or glob (relative to
-                TEMPLATE_DIR), default "*.symp"
+    TODO
 
-    Options:
-      --version             show program's version number and exit
-      -h, --help            show this help message and exit
-      -q, --quiet           don't print compiling information
-      -n, --non-recursive   don't recurse into subdirectories
-      -t TEMPLATE_DIR, --template-dir=TEMPLATE_DIR
-                            directory your Symplate files are in
-      -o OUTPUT_DIR, --output-dir=OUTPUT_DIR
-                            compiled template output directory, default
-                            "symplouts"
-      -p PREAMBLE, --preamble=PREAMBLE
-                            template preamble (see docs), default ""
+
+Hats off to bottle.py
+---------------------
+
+Literally a few days after I wrote a draft version of Symplate, I saw a
+reference to [Bottle](http://bottlepy.org) on Hacker News, and discovered the
+author of that had almost exactly the same idea (no doubt some time earlier).
+I thought of it independently, honest! Perhaps a good argument against
+software patents...
+
+However, after seeing Bottle, one thing I did steal was its use of `!` to
+denote raw output. It seemed cleaner than my initial idea of passing
+`raw=True` as a parameter to the filter, as in `{{ foo, raw=True }}`.
 
 
 Flames, comments, bug reports
