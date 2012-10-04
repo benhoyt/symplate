@@ -91,7 +91,8 @@ class Renderer(object):
         self._module_cache = {}
         if modify_path:
             path_dir = os.path.abspath(os.path.join(output_dir, '..'))
-            sys.path.insert(0, path_dir)
+            if path_dir not in sys.path:
+                sys.path.insert(0, path_dir)
 
     def _get_default_filter(self, filename):
         """Return Python expression string to use as default filter."""
