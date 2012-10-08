@@ -1,7 +1,7 @@
 Symplate, the Simple pYthon teMPLATE renderer
 =============================================
 
-Symplate is one of the simplest and fastest Python templating languages.
+Symplate is a very simple and very fast Python template language.
 
 
 Background
@@ -11,11 +11,11 @@ Background
 
 When I got frustrated with the complexities and slow rendering speed of
 [Cheetah](http://www.cheetahtemplate.org/), I started wondering just how
-simple a templating language could be.
+simple a template language could be.
 
-It's somewhat painful to write templates in pure Python -- code and text are
-hard to intersperse, and you don't get auto-escaping. But why not a KISS
-template-to-Python translator? Enter Symplate:
+You could write templates in pure Python, but that's somewhat painful -- code
+and text are hard to intersperse, and you don't get auto-escaping. But why not
+a KISS template-to-Python translator? Enter Symplate:
 
 * `text` becomes `_write('text')`
 * `{{ expr }}` becomes `_write(filt(expr))`
@@ -30,8 +30,8 @@ That's about all there is to it. All the rest is detail.
 Who uses Symplate?
 ------------------
 
-Only me ... so far. It's my experiment. But there's no reason you can't: it's
-a proper library, and fairly well tested. I "ported" my
+Only me ... so far. It started as my experiment. That said, Symplate is now a
+proper library, and fairly well tested. I also "ported" my
 [GiftyWeddings.com](http://giftyweddings.com/) website from Cheetah to
 Symplate, and it's working very well.
 
@@ -39,17 +39,17 @@ Symplate, and it's working very well.
 Why use Symplate?
 -----------------
 
-Well, if you care about **raw performance** or **simplicity of
-implementation**, Symplate might be for you. I care about both, and I haven't
-needed some of the extra features other systems provide, such as sandboxed
-execution. If you want a Porshe, use Symplate. If you'd prefer a Volvo or BMW,
-I'd recommend [Jinja2](http://jinja.pocoo.org/docs/) or
+If you care about **raw performance** or **simplicity of implementation**,
+Symplate might be for you. I care about both, and I haven't needed some of the
+extra features other systems provide, such as sandboxed execution and template
+inheritance. If you want a Porsche, use Symplate. If you'd prefer a Volvo or
+BMW, I'd recommend [Jinja2](http://jinja.pocoo.org/docs/) or
 [Mako](http://www.makotemplates.org/).
 
 Symplate is dead simple: a couple of pages of code translate your templates to
-Python `.py` files, and `render()` imports and executes those.
+Python `.py` files, and `render()` imports and executes the compiled output.
 
-Symplate's also about as fast as a pure-Python templating language can be.
+Symplate's also about as fast as a pure-Python template language can be.
 Partly *because* it's simple, it produces Python code as tight as you'd write
 it by hand.
 
@@ -57,33 +57,32 @@ it by hand.
 Isn't worrying about performance silly?
 ---------------------------------------
 
-Yes, [worrying about the performance of your template engine is
-silly](http://www.codeirony.com/?p=9). Well, sometimes. But when you're doing
-zero database requests and your "business logic" is pretty tight, template
-rendering is all that's left. And Cheetah (not to mention Django!) are
-particlarly slow.
+Yes, I know, [worrying about template performance is silly](http://www.codeirony.com/?p=9).
+*Some of the time.* But when you're caching everything to avoid database
+requests, and your "business logic" is pretty tight, template rendering is all
+that's left. And Cheetah (not to mention Django!) are particlarly slow.
 
 If you're running a large-scale website and you're caching things so that
-template rendering *is* your bottleneck ... then if you can take your
-rendering time down from 100ms to 20ms, you can run your website on 1/5th the
-number of servers.
+template rendering *is* your bottleneck (yes, I've been there) ... then if you
+can take your render times down from 100ms to 20ms, you can run your website
+on 1/5th the number of servers.
 
-So how fast is Symplate? About as fast as you can hand-code Python. Here's the
-Symplate benchmark showing compile and render times for some of the fast or
-popular template languages.
+So how fast is Symplate? As mentioned, it's about as fast as you can hand-code
+Python. Here's the Symplate benchmark showing compile and render times for
+some of the fast or popular template languages.
 
-Times are normalized to the HandCoded render time (TODO):
+Times are normalized to the HandCoded render time:
 
-    Engine    compile (ms)  render (ms)
-    -----------------------------------
-    HandCoded        0.000        0.107
-    Symplate         1.385        0.120
-    Wheezy           3.214        0.145
-    Bottle           1.093        0.277
-    Mako             6.567        0.415
-    Jinja2           7.149        0.590
-    Cheetah         13.299        0.644
-    Django           0.839        2.451
+    engine      compile  render
+    ---------------------------
+    HandCoded     0.001   1.000
+    Symplate     12.622   1.153
+    Wheezy       30.158   1.387
+    Bottle       10.409   2.595
+    Mako         61.721   3.899
+    Jinja2       68.233   5.612
+    Cheetah     123.779   6.118
+    Django        7.924  22.899
 
 
 Basic usage
