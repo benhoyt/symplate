@@ -56,7 +56,7 @@ class Renderer(object):
     """Symplate renderer class. See __init__'s docs for more info."""
 
     def __init__(self, template_dir, output_dir=None, extension='.symp',
-                 check_mtime=False, modify_path=True, preamble='',
+                 check_mtimes=False, modify_path=True, preamble='',
                  default_filter='symplate.html_filter'):
         """Initialize a Renderer instance.
 
@@ -66,7 +66,7 @@ class Renderer(object):
                           into, default is {template_dir}/../symplouts
         * extension:      file extension for templates (set to '' if you want
                           to specify explictly when calling render)
-        * check_mtime:    True means check template file's mtime on render(),
+        * check_mtimes:   True means check template file's mtime on render(),
                           which is slower and usually only used for debugging
         * modify_path:    True means add output_dir/.. to sys.path for
                           importing compiled template
@@ -84,7 +84,7 @@ class Renderer(object):
                                                       'symplouts'))
         self.output_dir = output_dir
         self.extension = extension
-        self.check_mtime = check_mtime
+        self.check_mtimes = check_mtimes
         self.preamble = preamble
         self.default_filter = default_filter
 
@@ -359,7 +359,7 @@ def _render(_renderer, %s):
     def _get_module(self, name):
         """Import or compile and import named template and return module."""
         names = self._get_filenames(name)
-        if self.check_mtime:
+        if self.check_mtimes:
             # compile the template source to .py if it has changed
             try:
                 py_mtime = os.path.getmtime(names['py'])
@@ -390,7 +390,7 @@ def _render(_renderer, %s):
         else:
             module = self._get_module(_name)
             # only store in module cache if we're not checking mtimes
-            if not self.check_mtime:
+            if not self.check_mtimes:
                 self._module_cache[_name] = module
         return module._render(self, *args, **kwargs)
 

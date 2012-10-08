@@ -12,7 +12,7 @@ BlogEntry = collections.namedtuple('BlogEntry', 'title url html_body')
 renderer = symplate.Renderer(
         os.path.join(os.path.dirname(__file__), 'symplates'),
         output_dir=os.path.join(os.path.dirname(__file__), 'symplouts'),
-        check_mtime=True)
+        check_mtimes=True)
 
 def main():
     entries = [

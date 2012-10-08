@@ -25,17 +25,17 @@ class TestRenderer(utils.TestCase):
         renderer = utils.Renderer(extension='.symp2')
         self.assertEquals(self.render('{% template %}te', _renderer=renderer), 'te')
 
-    def test_check_mtime_true(self):
-        renderer = utils.Renderer(check_mtime=True)
+    def test_check_mtimes_true(self):
+        renderer = utils.Renderer(check_mtimes=True)
         self.assertEquals(self.render('{% template %}cmt1', _renderer=renderer), 'cmt1')
         time.sleep(0.02)
         self.assertEquals(self.render('{% template %}cmt2', _renderer=renderer, _increment=0), 'cmt2')
 
-    def test_check_mtime_false(self):
-        renderer = utils.Renderer(check_mtime=True)
+    def test_check_mtimes_false(self):
+        renderer = utils.Renderer(check_mtimes=True)
         self.assertEquals(self.render('{% template %}cmf1', _renderer=renderer), 'cmf1')
         time.sleep(0.02)
-        renderer = utils.Renderer(check_mtime=False)
+        renderer = utils.Renderer(check_mtimes=False)
         self.assertEquals(self.render('{% template %}cmf2', _renderer=renderer, _increment=0), 'cmf1')
 
     def test_modify_path(self):

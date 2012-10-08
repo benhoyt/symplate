@@ -15,7 +15,7 @@ class Renderer(symplate.Renderer):
     def __init__(self, **kwargs):
         template_dir = kwargs.pop('template_dir', TEMPLATE_DIR)
         kwargs.setdefault('output_dir', OUTPUT_DIR)
-        kwargs.setdefault('check_mtime', True)
+        kwargs.setdefault('check_mtimes', True)
         super(Renderer, self).__init__(template_dir, **kwargs)
 
 renderer = Renderer()
