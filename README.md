@@ -414,6 +414,25 @@ templates.
 * **default_filter** defaults to `'symplate.html_filter'`, and is used to
 [override the default filter](#overriding-the-default-filter).
 
+The public methods of `Renderer` instances are `render`, `compile`, and
+`compile_all`, though often you'll only need `render`. You use these functions
+as follows:
+
+    # first create a Renderer
+    renderer = symplate.Renderer(template_dir)
+
+    # render named template with given positional and keyword args and return
+    # output as a unicode string
+    output = renderer.render('home', *args, **kwargs)
+
+    # compile named template to a .py file in output directory; this will be
+    # done automatically the first time you call render(), but you can do it
+    # manually too
+    renderer.compile('home')
+
+    # compile all templates in template_dir to .py files; specify
+    # "recursive=False" if you don't want it to recurse into sub-directories
+    renderer.compile_all()
 
 Unicode handling
 ----------------
