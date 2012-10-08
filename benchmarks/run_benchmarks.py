@@ -17,7 +17,7 @@ ENTRIES = [
     BlogEntry(u'My life & story', None, u'<p>Once upon a time...</p>'),
     BlogEntry(u'First \u201cpost\u201d', u'/first-post/', u'<p>This is the first post.</p>'),
 ]
-ENTRIES *= 10  # To give the render test a bit more to chew on
+ENTRIES *= 10  # to give the render test a bit more to chew on
 
 
 def rel_dir(dirname):
@@ -42,12 +42,11 @@ class TemplateLanguage(object):
         raise NotImplementedError
 
     def benchmark(self):
-        timings = {}
         self.setup_compile()
-        timings['compile'] = min(timeit.repeat(self.compile, number=self.num_compiles)) / float(self.num_compiles)
+        compile_time = min(timeit.repeat(self.compile, number=self.num_compiles)) / float(self.num_compiles)
         self.setup_render()
-        timings['render'] = min(timeit.repeat(self.render, number=self.num_renders)) / float(self.num_renders)
-        return timings
+        render_time = min(timeit.repeat(self.render, number=self.num_renders)) / float(self.num_renders)
+        return (compile_time, render_time)
 
 
 try:
@@ -290,12 +289,11 @@ def main():
                            issubclass(cls, TemplateLanguage) and
                            cls is not TemplateLanguage]
 
-    results = []
+    results = {}
     output = None
     for name, cls in language_classes:
         language = cls()
-        timings = language.benchmark()
-        results.append((name, timings['compile'], timings['render']))
+        results[name] = language.benchmark()
 
         output_dir = rel_dir('output')
         if not os.path.exists(output_dir):
@@ -309,10 +307,12 @@ def main():
             elif output[1] != rendering.strip():
                 print 'ERROR: output from %s and %s differ' % (name, output[0])
 
-    print 'Engine    compile (ms)  render (ms)'
-    print '-----------------------------------'
-    for name, compile_time, render_time in sorted(results, key=lambda r: r[2]):
-        print '%-10s %11.3f %12.3f' % (name, compile_time * 1000, render_time * 1000)
+    # show compiler and render times (normalized to HandCoded render time)
+    norm_time = results['HandCoded'][1]
+    print 'engine      compile  render'
+    print '---------------------------'
+    for name, timings in sorted(results.items(), key=lambda r: r[1][1]):
+        print '%-11s %7.3f %7.3f' % (name, timings[0] / norm_time, timings[1] / norm_time)
 
 
 if __name__ == '__main__':
