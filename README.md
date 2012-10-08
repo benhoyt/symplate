@@ -4,22 +4,16 @@ Symplate, the Simple pYthon teMPLATE renderer
 Symplate is a very simple and very fast Python template language.
 
 * [Background](#background)
-* [Who uses Symplate?](#who-uses-symplate)
-* [Why use Symplate?](#why-use-symplate)
-* [Isn't worrying about performance silly?](#isnt-worrying-about-performance-silly)
+* [FAQ](#faq) -- [Who](#who-uses-symplate) | [Why](#why-use-symplate) | [Performance](#isnt-worrying-about-performance-silly)
 * [Basic usage](#basic-usage)
 * [Compiled Python output](#compiled-python-output)
-* [Directives](#directives)
-* [Filters](#filters)
+* [Syntax](#syntax) -- [Directives](#directives) | [Comments](#comments) | [Literals](#outputting-a-literal----or-)
+* [Filters](#filters) -- [Default](#the-default-filter) | [Raw](#outputting-raw-strings) | [Setting](#setting-the-filter) | [Overriding](#overriding-the-default-filter)
 * [Including sub-templates](#including-sub-templates)
-* [Customizing the Renderer](#customizing-the-renderer)
+* [Customizing Renderer](#customizing-renderer)
 * [Unicode handling](#unicode-handling)
-* [Comments](#comments)
-* [Outputting a literal {{, }}, {%, or %}](#outputting-a-literal----or-)
 * [Command line usage](#command-line-usage)
-* [Hats off to bottle.py](#hats-off-to-bottlepy)
-* [TODO](#todo)
-* [Flames, comments, bug reports](#flames-comments-bug-reports)
+* [Meta](#meta) -- [Bottle](#hats-off-to-bottlepy) | [To-do](#to-do) | [Feedback](#flames-comments-bug-reports)
 
 
 Background
@@ -43,17 +37,17 @@ a KISS template-to-Python translator? Enter Symplate:
 That's about all there is to it. All the rest is [detail](#directives).
 
 
-Who uses Symplate?
-------------------
+FAQ
+---
+
+### Who uses Symplate?
 
 Only me ... so far. It started as my experiment. That said, Symplate is now a
 proper library, and fairly well tested. I also "ported" my
 [GiftyWeddings.com](http://giftyweddings.com/) website from Cheetah to
 Symplate, and it's working very well.
 
-
-Why use Symplate?
------------------
+### Why use Symplate?
 
 If you care about **raw performance** or **simplicity of implementation**,
 Symplate might be for you. I care about both, and I haven't needed some of the
@@ -69,9 +63,7 @@ Symplate's also about as fast as a pure-Python template language can be.
 Partly *because* it's simple, it produces Python code as tight as you'd write
 it by hand.
 
-
-Isn't worrying about performance silly?
----------------------------------------
+### Isn't worrying about performance silly?
 
 Yes, I know, [worrying about template performance is
 silly](http://www.codeirony.com/?p=9). *Some of the time.* But when you're
@@ -155,8 +147,9 @@ and you're away:
     def homepage():
         return renderer.render('blog', entries, title="Ben's Blog")
 
-You can customize the Renderer to specify a different output directory, or to
-turn on checking of template file mtimes for debugging. For example:
+You can [customize your Renderer](#customizing-renderer) to specify a
+different output directory, or to turn on checking of template file mtimes for
+debugging. For example:
 
     renderer = symplate.Renderer(template_dir, output_dir='out',
                                  check_mtime=settings.DEBUG)
@@ -231,8 +224,12 @@ Symplate is such a direct mapping to Python, it's usually easy to find errors
 in your templates.)
 
 
-Directives
-----------
+Syntax
+------
+
+Symplate has very little syntax of its own, but here's what you need to know:
+
+### Directives
 
 The only directives or keywords in Symplate are `template` and `end`. Oh, and
 "colon at the end of a code line".
@@ -256,6 +253,42 @@ A `:` (colon) at the end of a code block starts a code indentation block, just
 like in Python. However, there's a special case for the `elif`, `else`,
 `except` and `finally` keywords -- they dedent for the line the keyword is on,
 and then indent again (just like you would when writing Python).
+
+### Comments
+
+Because `{% ... %}` blocks are simply copied to the compiled template as
+Python code, there's no special handling for comments -- just use standard
+Python `#` comments inside code blocks:
+
+    {% # This is a comment. %}
+    {% # Multi-line comments
+       # work fine too. %}
+    {{ foo # DON'T COMMENT INSIDE OUTPUT EXPRESSIONS }}
+
+One quirk is that Symplate determines when to indent the Python output based
+on the `:` character being at the end of the line, so you can't add a comment
+after the colon that begins an indentation block:
+
+    {% for element in lst: # DON'T DO THIS %}
+
+### Outputting a literal {{, }}, {%, or %}
+
+You can't include `{{`, `}}`, `{%`, or `%}` anywhere inside an output
+expression or code block. To output one of these two-character strings
+literally, use Python's string literal concatenation so that the two special
+characters are separated.
+
+For example, this will output a single `{{`:
+
+    {{ '{' '{' }}
+
+If you find yourself needing this a lot (for instance in writing a template
+about templates), you could shortcut and name it at the top of your template:
+
+    {% LB, RB = '{' '{', '}' '}' %}
+    {{LB}}one{{RB}}
+    {{LB}}two{{RB}}
+    {{LB}}three{{RB}}
 
 
 Filters
@@ -301,9 +334,9 @@ If you need to change back to the default filter (`html_filter`), just say:
 
     {% filt = symplate.html_filter %}
 
-### Changing the default filter
+### Overriding the default filter
 
-You can change the default filter by passing `Renderer` the `default_filter`
+You can override the default filter by passing `Renderer` the `default_filter`
 argument. If this is a string, it's used directly for setting the filter, as
 per the above:
 
@@ -332,8 +365,8 @@ available.
 Including sub-templates
 -----------------------
 
-As mentioned above, there's no literal "include" directive. You simply call
-`render` in an output expression, like this:
+Symplate has no literal "include" directive. You simply call `render` in an
+output expression, like this:
 
     {{ !render('sub_template_name', *args, **kwargs) }}
 
@@ -356,8 +389,8 @@ and after the first time when the module is imported, it basically amounts to
 a couple of dict lookups.
 
 
-Customizing the Renderer
-------------------------
+Customizing Renderer
+--------------------
 
 TODO
 
@@ -372,46 +405,6 @@ unicode.
 `render()` always returns a unicode string, and it's best to pass unicode
 strings as arguments to `render()`, but you can also pass ASCII byte strings,
 as the default filter `html_filter` will handle both.
-
-
-Comments
---------
-
-Because `{% ... %}` blocks are simply copied to the compiled template as
-Python code, there's no special handling for comments -- just use standard
-Python `#` comments inside code blocks:
-
-    {% # This is a comment. %}
-    {% # Multi-line comments
-       # work fine too. %}
-    {{ foo # DON'T COMMENT INSIDE OUTPUT EXPRESSIONS }}
-
-One quirk is that Symplate determines when to indent the Python output based
-on the `:` character being at the end of the line, so you can't add a comment
-after the colon that begins an indentation block:
-
-    {% for element in lst: # DON'T DO THIS %}
-
-
-Outputting a literal {{, }}, {%, or %}
---------------------------------------
-
-You can't include `{{`, `}}`, `{%`, or `%}` anywhere inside an output
-expression or code block. To output one of these two-character strings
-literally, use Python's string literal concatenation so that the two special
-characters are separated.
-
-For example, this will output a single `{{`:
-
-    {{ '{' '{' }}
-
-If you find yourself needing this a lot (for instance in writing a template
-about templates), you could shortcut and name it at the top of your template:
-
-    {% LB, RB = '{' '{', '}' '}' %}
-    {{LB}}one{{RB}}
-    {{LB}}two{{RB}}
-    {{LB}}three{{RB}}
 
 
 Command line usage
@@ -444,8 +437,10 @@ templates to Python code. Quoting from the command line help:
       -n, --non-recursive   don't recurse into subdirectories
 
 
-Hats off to bottle.py
----------------------
+Meta
+----
+
+### Hats off to bottle.py
 
 Literally a few days after I wrote a draft version of Symplate, I saw a
 reference to [Bottle](http://bottlepy.org) on Hacker News, and discovered the
@@ -457,9 +452,7 @@ However, after seeing Bottle, one thing I did steal was its use of `!` to
 denote raw output. It seemed cleaner than my initial idea of passing
 `raw=True` as a parameter to the filter, as in `{{ foo, raw=True }}`.
 
-
-TODO
-----
+### To-do
 
 Some things I'd like to do or look into when I get a chance:
 
@@ -469,9 +462,7 @@ Some things I'd like to do or look into when I get a chance:
   reading those when an error occurs?
 * Investigate template inheritance, perhaps in the style of bottle.py.
 
-
-Flames, comments, bug reports
------------------------------
+### Flames, comments, bug reports
 
 Please send flames, comments, and questions about Symplate to Ben Hoyt:
 
