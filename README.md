@@ -3,13 +3,27 @@ Symplate, the Simple pYthon teMPLATE renderer
 
 Symplate is a very simple and very fast Python template language.
 
-TODO: table of contents?
+* [Background](#background)
+* [Who uses Symplate?](#who-uses-symplate)
+* [Why use Symplate?](#why-use-symplate)
+* [Isn't worrying about performance silly?](#isnt-worrying-about-performance-silly)
+* [Basic usage](#basic-usage)
+* [Compiled Python output](#compiled-python-output)
+* [Directives](#directives)
+* [Filters](#filters)
+* [Including sub-templates](#including-sub-templates)
+* [Customizing the Renderer](#customizing-the-renderer)
+* [Unicode handling](#unicode-handling)
+* [Comments](#comments)
+* [Outputting a literal {{, }}, {%, or %}](#outputting-a-literal----or-)
+* [Command line usage](#command-line-usage)
+* [Hats off to bottle.py](#hats-off-to-bottlepy)
+* [TODO](#todo)
+* [Flames, comments, bug reports](#flames-comments-bug-reports)
 
 
 Background
 ----------
-
-[*Skip all this and show me an example!*](#basic-usage)
 
 When I got frustrated with the complexities and slow rendering speed of
 [Cheetah](http://www.cheetahtemplate.org/), I started wondering just how
