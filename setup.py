@@ -11,7 +11,7 @@ setup(
     author_email='benhoyt@gmail.com',
     url='https://github.com/benhoyt/symplate',
     license='LICENSE.txt',
-    description='A very simple and very fast Python template language',
+    description='Symplate, the Simple pYthon teMPLATE renderer',
     long_description=open('README.md').read(),
     py_modules=['symplate'],
 )
