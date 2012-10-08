@@ -36,7 +36,9 @@ class TestRenderer(utils.TestCase):
         self.assertEquals(self.render('{% template %}cmf1', _renderer=renderer), 'cmf1')
         time.sleep(0.02)
         renderer = utils.Renderer(check_mtimes=False)
-        self.assertEquals(self.render('{% template %}cmf2', _renderer=renderer, _increment=0), 'cmf1')
+        self.assertEquals(self.render('{% template %}cmf2', _renderer=renderer, _increment=0), 'cmf2')
+        time.sleep(0.02)
+        self.assertEquals(self.render('{% template %}cmf3', _renderer=renderer, _increment=0), 'cmf2')
 
     def test_modify_path(self):
         saved_path = list(sys.path)

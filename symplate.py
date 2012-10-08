@@ -340,19 +340,19 @@ def _render(_renderer, %s):
                 dirs[:] = []
 
     def _get_module(self, name):
-        """Import or compile and import named template and return module."""
+        """Import (or compile and import) named template and return module."""
         names = self._get_filenames(name)
-        if self.check_mtimes:
-            # compile the template source to .py if it has changed
-            try:
-                py_mtime = os.path.getmtime(names['py'])
-            except OSError:
-                py_mtime = 0
-            if os.path.getmtime(names['symplate']) > py_mtime:
-                self.compile(name)
-                # .py changed, ensure module is reloaded when imported below
-                if names['module'] in sys.modules:
-                    sys.modules.pop(names['module'])
+
+        # compile the template source to .py if it has changed
+        try:
+            py_mtime = os.path.getmtime(names['py'])
+        except OSError:
+            py_mtime = 0
+        if os.path.getmtime(names['symplate']) > py_mtime:
+            self.compile(name)
+            # .py changed, ensure module is reloaded when imported below
+            if names['module'] in sys.modules:
+                sys.modules.pop(names['module'])
 
         # try to import the compiled template; if it doesn't exist (it's never
         # been compiled), compile it and then re-import
