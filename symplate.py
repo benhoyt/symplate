@@ -2,6 +2,9 @@
 
 See README.md or https://github.com/benhoyt/symplate for documentation.
 
+Symplate is released under the new BSD 3-clause license. See LICENSE.txt for
+the full license text.
+
 """
 
 from __future__ import with_statement
