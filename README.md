@@ -488,8 +488,9 @@ I thought of it independently, honest! Perhaps a good argument against
 software patents...
 
 However, after seeing Bottle, one thing I did steal was its use of `!` to
-denote raw output. It seemed cleaner than my initial idea of passing
-`raw=True` as a parameter to the filter, as in `{{ foo, raw=True }}`.
+denote raw output. It seemed cleaner (and better for performance reasons) than
+my initial idea of passing `raw=True` as a parameter to the filter, as in
+`{{ foo, raw=True }}`.
 
 ### To-do
 
