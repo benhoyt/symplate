@@ -14,7 +14,7 @@ __version__ = '0.9'
 
 def html_filter(s):
     """Escape special HTML/XML characters in given ASCII or unicode string
-    (this is the default output filter in templates).
+    (the default output filter in templates).
     """
     # slight performance boost by feeding correct string type into replace()
     if isinstance(s, unicode):
@@ -53,31 +53,14 @@ class Error(Exception):
 
 
 class Renderer(object):
-    """Symplate renderer class. See __init__'s docs for more info."""
+    """Symplate renderer class. Holds settings for rendering and caches
+    compiled template modules.
+    """
 
     def __init__(self, template_dir, output_dir=None, extension='.symp',
                  check_mtimes=False, modify_path=True, preamble='',
                  default_filter='symplate.html_filter'):
-        """Initialize a Renderer instance.
-
-        * template_dir:   directory your Symplate source files are in (the
-                          only required argument)
-        * output_dir:     directory compiled template (.py) files should go
-                          into, default is {template_dir}/../symplouts
-        * extension:      file extension for templates (set to '' if you want
-                          to specify explictly when calling render)
-        * check_mtimes:   True means check template file's mtime on render(),
-                          which is slower and usually only used for debugging
-        * modify_path:    True means add output_dir/.. to sys.path for
-                          importing compiled template
-        * preamble:       extra code to include at top of compiled template,
-                          such as imports
-        * default_filter: if a string, use directly as Python expression for
-                          default filter; otherwise this must be a function
-                          that takes a single filename argument (e.g., if you
-                          want to use the file extension to determine the
-                          default filter)
-        """
+        """Initialize a Renderer instance. See README.md for more info."""
         self.template_dir = os.path.abspath(template_dir)
         if output_dir is None:
             output_dir = os.path.abspath(os.path.join(self.template_dir, '..',

@@ -392,7 +392,27 @@ a couple of dict lookups.
 Customizing Renderer
 --------------------
 
-TODO
+To customize rendering settings, simply pass arguments to the `Renderer()`
+initializer as follows:
+
+* **template_dir** is the only required argument -- it specifies the root
+directory of your Symplate source files.
+* **output_dir** is the directory the compiled Python template files will go
+into. The default is `symplouts` at the same level as your `template_dir`.
+* **extension** is the file extension for templates. The default is `'.symp'`.
+Set this to `''` if you want to specify the file extension explicitly when
+calling render.
+* **check_mtimes** is off by default. Set to True to tell Symplate to check
+the template files' modify times on render, which is slower and usually only
+used for debugging.
+* **modify_path** is on by default, and means Symplate will put
+`output_dir/..` first on `sys.path` so it can import compiled templates. Set
+to False if you want to manage this manually.
+* **preamble** defaults to empty string, and specifies extra code to include
+at the top of all compiled template. Useful for imports you use in many
+templates.
+* **default_filter** defaults to `'symplate.html_filter'`, and is used to
+[override the default filter](#overriding-the-default-filter).
 
 
 Unicode handling
