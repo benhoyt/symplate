@@ -363,6 +363,7 @@ def get_default_filter(self, filename):
         return 'json.dumps'
     else:
         return 'symplate.html_filter'
+
 renderer = symplate.Renderer(default_filter=get_default_filter,
                              preamble='import json\n')
 ```
