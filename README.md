@@ -142,22 +142,25 @@ To compile and render the main blog template in one fell swoop, set `entries`
 to a list of blog entries with the `url`, `title`, and `html_body` attributes,
 and you're away:
 
-    renderer = symplate.Renderer(template_dir)
+```python
+renderer = symplate.Renderer(template_dir)
 
-    def homepage():
-        return renderer.render('blog', entries, title="Ben's Blog")
+def homepage():
+    return renderer.render('blog', entries, title="Ben's Blog")
+```
 
 You can [customize your Renderer](#customizing-renderer) to specify a
 different output directory, or to turn on checking of template file mtimes for
 debugging. For example:
 
-    renderer = symplate.Renderer(template_dir, output_dir='out',
-                                 check_mtime=settings.DEBUG)
+```python
+renderer = symplate.Renderer(template_dir, output_dir='out',
+                             check_mtime=settings.DEBUG)
 
-    def homepage():
-        entries = load_blog_entries()
-        return renderer.render('blog', entries, title="Ben's Blog")
-
+def homepage():
+    entries = load_blog_entries()
+    return renderer.render('blog', entries, title="Ben's Blog")
+```
 
 Compiled Python output
 ----------------------
@@ -179,37 +182,39 @@ multi-line strings as `"""long, multi-line strings"""`.
 
 The `blog.symp` example above produces this in `blog.py`:
 
-    import symplate
+```python
+import symplate
 
-    def _render(_renderer, entries, title='My Blog'):
-        filt = symplate.html_filter
-        render = _renderer.render
-        _output = []
-        _writes = _output.extend
+def _render(_renderer, entries, title='My Blog'):
+    filt = symplate.html_filter
+    render = _renderer.render
+    _output = []
+    _writes = _output.extend
 
+    _writes((
+        render('inc/header', title),
+        u'\n<h1>This is ',
+        filt(title),
+        u'</h1>\n',
+    ))
+    for entry in entries:
         _writes((
-            render('inc/header', title),
-            u'\n<h1>This is ',
-            filt(title),
-            u'</h1>\n',
-        ))
-        for entry in entries:
-            _writes((
-                u'    <h2><a href="',
-                filt(entry.url),
-                u'">',
-                filt(entry.title.title()),
-                u'</a></h2>\n    ',
-                entry.html_body,
-                u'\n',
-            ))
-        _writes((
-            u'</ul>\n',
-            render('inc/footer'),
+            u'    <h2><a href="',
+            filt(entry.url),
+            u'">',
+            filt(entry.title.title()),
+            u'</a></h2>\n    ',
+            entry.html_body,
             u'\n',
         ))
+    _writes((
+        u'</ul>\n',
+        render('inc/footer'),
+        u'\n',
+    ))
 
-        return u''.join(_output)
+    return u''.join(_output)
+```
 
 As you can see, apart from a tiny premable, it's about as fast and direct as
 it could possibly be in pure Python.
@@ -340,23 +345,27 @@ You can override the default filter by passing `Renderer` the `default_filter`
 argument. If this is a string, it's used directly for setting the filter, as
 per the above:
 
-    # this default filter will make everything uppercase
-    renderer = symplate.Renderer(default_filter='lambda s: s.upper()')
+```python
+# this default filter will make everything uppercase
+renderer = symplate.Renderer(default_filter='lambda s: s.upper()')
+```
 
 If it's not a string, it must be a function which takes a single `filename`
 (the template filename) as its argument. This is useful when, for example, you
 want to determine the default filter based on the template's file extension.
 A simple example:
 
-    # this default filter will use json.dumps() for .js.symp files and the
-    # normal HTML filter for other files
-    def get_default_filter(self, filename):
-        if filename.lower().endswith('.js.symp'):
-            return 'json.dumps'
-        else:
-            return 'symplate.html_filter'
-    renderer = symplate.Renderer(default_filter=get_default_filter,
-                                 preamble='import json\n')
+```python
+# this default filter will use json.dumps() for .js.symp files and the
+# normal HTML filter for other files
+def get_default_filter(self, filename):
+    if filename.lower().endswith('.js.symp'):
+        return 'json.dumps'
+    else:
+        return 'symplate.html_filter'
+renderer = symplate.Renderer(default_filter=get_default_filter,
+                             preamble='import json\n')
+```
 
 Note the modified `premable` so the compiled template has the `json` module
 available.
@@ -418,21 +427,23 @@ The public methods of `Renderer` instances are `render`, `compile`, and
 `compile_all`, though often you'll only need `render`. You use these functions
 as follows:
 
-    # first create a Renderer
-    renderer = symplate.Renderer(template_dir)
+```python
+# first create a Renderer
+renderer = symplate.Renderer(template_dir)
 
-    # render named template with given positional and keyword args and return
-    # output as a unicode string
-    output = renderer.render('home', *args, **kwargs)
+# render named template with given positional and keyword args and return
+# output as a unicode string
+output = renderer.render('home', *args, **kwargs)
 
-    # compile named template to a .py file in output directory; this will be
-    # done automatically the first time you call render(), but you can do it
-    # manually too
-    renderer.compile('home')
+# compile named template to a .py file in output directory; this will be
+# done automatically the first time you call render(), but you can do it
+# manually too
+renderer.compile('home')
 
-    # compile all templates in template_dir to .py files; specify
-    # "recursive=False" if you don't want it to recurse into sub-directories
-    renderer.compile_all()
+# compile all templates in template_dir to .py files; specify
+# "recursive=False" if you don't want it to recurse into sub-directories
+renderer.compile_all()
+```
 
 Unicode handling
 ----------------
