@@ -82,18 +82,16 @@ some of the fast or popular template languages.
 
 Times are normalized to the HandCoded render time:
 
-```
-engine      compile  render
----------------------------
-HandCoded     0.001   1.000
-Symplate     12.622   1.153
-Wheezy       30.158   1.387
-Bottle       10.409   2.595
-Mako         61.721   3.899
-Jinja2       68.233   5.612
-Cheetah     123.779   6.118
-Django        7.924  22.899
-```
+    engine      compile  render
+    ---------------------------
+    HandCoded     0.001   1.000
+    Symplate     12.622   1.153
+    Wheezy       30.158   1.387
+    Bottle       10.409   2.595
+    Mako         61.721   3.899
+    Jinja2       68.233   5.612
+    Cheetah     123.779   6.118
+    Django        7.924  22.899
 
 
 Basic usage
@@ -102,17 +100,15 @@ Basic usage
 Let's start with a simple example that uses more or less all the features of
 Symplate. Our main template file is `blog.symp`:
 
-```django
-{% template entries, title='My Blog' %}
-{{ !render('inc/header', title) }}
-<h1>This is {{ title }}</h1>
-{% for entry in entries: %}
-    <h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
-    {{ !entry.html_body }}
-{% end for %}
-</ul>
-{{ !render('inc/footer') }}
-```
+    {% template entries, title='My Blog' %}
+    {{ !render('inc/header', title) }}
+    <h1>This is {{ title }}</h1>
+    {% for entry in entries: %}
+        <h2><a href="{{ entry.url }}">{{ entry.title.title() }}</a></h2>
+        {{ !entry.html_body }}
+    {% end for %}
+    </ul>
+    {{ !render('inc/footer') }}
 
 In true Python style, everything's explicit. We explicitly specify the
 parameters the template takes in the `{% template ... %}` line, including the
@@ -128,23 +124,19 @@ expression is also prefixed with `!` -- it will output the HTML body as a
 
 Then `inc/header.symp` looks like this:
 
-```django
-{% template title %}
-<html>
-<head>
-    <meta charset="UTF-8" />
-    <title>{{ title }}</title>
-</head>
-<body>
-```
+    {% template title %}
+    <html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>{{ title }}</title>
+    </head>
+    <body>
 
 And `inc/footer.symp` is of course:
 
-```django
-{% template %}
-</body>
-</html>
-```
+    {% template %}
+    </body>
+    </html>
 
 To compile and render the main blog template in one fell swoop, set `entries`
 to a list of blog entries with the `url`, `title`, and `html_body` attributes,
@@ -273,20 +265,16 @@ Because `{% ... %}` blocks are simply copied to the compiled template as
 Python code, there's no special handling for comments -- just use standard
 Python `#` comments inside code blocks:
 
-```django
-{% # This is a comment. %}
-{% # Multi-line comments
-   # work fine too. %}
-{{ foo # DON'T COMMENT INSIDE OUTPUT EXPRESSIONS }}
-```
+    {% # This is a comment. %}
+    {% # Multi-line comments
+       # work fine too. %}
+    {{ foo # DON'T COMMENT INSIDE OUTPUT EXPRESSIONS }}
 
 One quirk is that Symplate determines when to indent the Python output based
 on the `:` character being at the end of the line, so you can't add a comment
 after the colon that begins an indentation block:
 
-```django
-{% for element in lst: # DON'T DO THIS %}
-```
+    {% for element in lst: # DON'T DO THIS %}
 
 ### Outputting a literal {{, }}, {%, or %}
 
@@ -297,19 +285,15 @@ characters are separated.
 
 For example, this will output a single `{{`:
 
-```django
-{{ '{' '{' }}
-```
+    {{ '{' '{' }}
 
 If you find yourself needing this a lot (for instance in writing a template
 about templates), you could shortcut and name it at the top of your template:
 
-```django
-{% LB, RB = '{' '{', '}' '}' %}
-{{LB}}one{{RB}}
-{{LB}}two{{RB}}
-{{LB}}three{{RB}}
-```
+    {% LB, RB = '{' '{', '}' '}' %}
+    {{LB}}one{{RB}}
+    {{LB}}two{{RB}}
+    {{LB}}three{{RB}}
 
 
 Filters
@@ -325,17 +309,13 @@ attribute values.
 For example, `render('test', thing='A & B', title="Symplate's simple")` on
 this template:
 
-```django
-Thing is <b>{{ thing }}</b>.
-<img src='logo.png' title='{{ title }}'>
-```
+    Thing is <b>{{ thing }}</b>.
+    <img src='logo.png' title='{{ title }}'>
 
 Would produce the output:
 
-```django
-Thing is <b>A &amp; B</b>.
-<img src='logo.png' title='Symplate&#39;s simple'>
-```
+    Thing is <b>A &amp; B</b>.
+    <img src='logo.png' title='Symplate&#39;s simple'>
 
 ### Outputting raw strings
 
@@ -352,16 +332,12 @@ function which takes a single argument and returns a unicode or ASCII string.
 The expression inside a `{{ ... }}` is passed directly to the current `filt`
 function, so you can pass other arguments to custom filters. For example:
 
-```django
-{% filt = json.dumps %}
-{{ obj, indent=4, sort_keys=True }}
-```
+    {% filt = json.dumps %}
+    {{ obj, indent=4, sort_keys=True }}
 
 If you need to change back to the default filter (`html_filter`), just say:
 
-```django
-{% filt = symplate.html_filter %}
-```
+    {% filt = symplate.html_filter %}
 
 ### Overriding the default filter
 
@@ -401,9 +377,7 @@ Including sub-templates
 Symplate has no literal "include" directive. You simply call `render` in an
 output expression, like this:
 
-```django
-{{ !render('sub_template_name', *args, **kwargs) }}
-```
+    {{ !render('sub_template_name', *args, **kwargs) }}
 
 `render` inside templates is set to the current Renderer instance's `render`
 function, so it uses the settings you expect. Note that you almost always use
@@ -417,9 +391,7 @@ Symplate doesn't currently support template inheritance -- it prefers
 "composition over inheritance", if you will. For instance, if your header
 template has an ad in its sidebar that can vary by page, you could say:
 
-```django
-{{ !render('header', title='My Page', ad_html=render('ad1')) }}
-```
+    {{ !render('header', title='My Page', ad_html=render('ad1')) }}
 
 When `check_mtimes` is off (the default), calling `render()` is super-fast,
 and after the first time when the module is imported, it basically amounts to
@@ -496,25 +468,23 @@ not write to the file system.
 Simply specify arguments as per your `Renderer`, and it'll compile all your
 templates to Python code. Quoting from the command line help:
 
-```
-Usage: symplate.py [-h] [options] template_dir [template_names]
+    Usage: symplate.py [-h] [options] template_dir [template_names]
 
-Compile templates in specified template_dir, or all templates if
-template_names not given
+    Compile templates in specified template_dir, or all templates if
+    template_names not given
 
-Options:
-  --version             show program's version number and exit
-  -h, --help            show this help message and exit
-  -o OUTPUT_DIR, --output-dir=OUTPUT_DIR
-                        compiled template output directory, default
-                        {template_dir}/../symplouts
-  -e EXTENSION, --extension=EXTENSION
-                        file extension for templates, default .symp
-  -p PREAMBLE, --preamble=PREAMBLE
-                        template preamble (see docs), default ""
-  -q, --quiet           don't print what we're doing
-  -n, --non-recursive   don't recurse into subdirectories
-```
+    Options:
+      --version             show program's version number and exit
+      -h, --help            show this help message and exit
+      -o OUTPUT_DIR, --output-dir=OUTPUT_DIR
+                            compiled template output directory, default
+                            {template_dir}/../symplouts
+      -e EXTENSION, --extension=EXTENSION
+                            file extension for templates, default .symp
+      -p PREAMBLE, --preamble=PREAMBLE
+                            template preamble (see docs), default ""
+      -q, --quiet           don't print what we're doing
+      -n, --non-recursive   don't recurse into subdirectories
 
 
 Meta
