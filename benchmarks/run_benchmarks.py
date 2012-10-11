@@ -28,6 +28,7 @@ def rel_dir(dirname):
 class TemplateLanguage(object):
     num_compiles = 10
     num_renders = 100
+    version = ''
 
     def setup_compile(self):
         pass
@@ -46,7 +47,7 @@ class TemplateLanguage(object):
         compile_time = min(timeit.repeat(self.compile, number=self.num_compiles)) / float(self.num_compiles)
         self.setup_render()
         render_time = min(timeit.repeat(self.render, number=self.num_renders)) / float(self.num_renders)
-        return (compile_time, render_time)
+        return (compile_time, render_time, self.version)
 
 
 try:
@@ -57,6 +58,8 @@ except ImportError:
     symplate = None
 if symplate:
     class Symplate(TemplateLanguage):
+        version = symplate.__version__
+
         def __init__(self):
             self.renderer = symplate.Renderer(rel_dir('symplate'))
 
@@ -71,6 +74,7 @@ if symplate:
 try:
     import Cheetah.Template as cheetah
     from Cheetah.Filters import WebSafe as cheetah_websafe
+    from Cheetah import Version as cheetah_version
 except ImportError:
     warnings.warn("Can't import Cheetah, is it in your PYTHONPATH?")
     cheetah = None
@@ -82,6 +86,8 @@ if cheetah:
         pass
 
     class Cheetah(TemplateLanguage):
+        version = cheetah_version
+
         def __init__(self):
             self.template_dir = rel_dir('cheetah')
 
@@ -106,6 +112,8 @@ except ImportError:
     jinja2 = None
 if jinja2:
     class Jinja2(TemplateLanguage):
+        version = jinja2.__version__
+
         def __init__(self):
             loader = jinja2.FileSystemLoader(rel_dir('jinja2'))
             self.compile_env = jinja2.Environment(loader=loader, autoescape=True, cache_size=0, trim_blocks=True)
@@ -131,6 +139,8 @@ except ImportError:
     mako = None
 if mako:
     class Mako(TemplateLanguage):
+        version = mako.__version__
+
         def __init__(self):
             self.compile_lookup = mako.lookup.TemplateLookup(
                     directories=[rel_dir('mako')],
@@ -165,6 +175,8 @@ if wheezy:
                          '>', '&gt;').replace('"', '&quot;')
 
     class Wheezy(TemplateLanguage):
+        version = ''
+
         def __init__(self):
             self.engine = wheezy.template.Engine(
                     loader=wheezy.template.FileLoader([rel_dir('wheezy')]),
@@ -197,6 +209,8 @@ except ImportError:
     django = None
 if django:
     class Django(TemplateLanguage):
+        version = django.get_version()
+
         def compile(self):
             django.template.loader.get_template('main.tmpl')
 
@@ -215,6 +229,8 @@ except ImportError:
     bottle = None
 if bottle:
     class Bottle(TemplateLanguage):
+        version = bottle.__version__
+
         def __init__(self):
             self.lookup = [rel_dir('bottle')]
 
@@ -286,7 +302,6 @@ class HandCoded(TemplateLanguage):
 
         return u''.join(_output)
 
-
 def main():
     language_classes = [(name, cls) for name, cls in globals().items()
                         if isinstance(cls, type) and
@@ -313,10 +328,13 @@ def main():
 
     # show compiler and render times (normalized to HandCoded render time)
     norm_time = results['HandCoded'][1]
-    print 'engine      compile  render'
-    print '---------------------------'
+    print 'engine             compile  render'
+    print '----------------------------------'
     for name, timings in sorted(results.items(), key=lambda r: r[1][1]):
-        print '%-11s %7.3f %7.3f' % (name, timings[0] / norm_time, timings[1] / norm_time)
+        compile_time, render_time, version = timings
+        name_version = '%s %s' % (name, version)
+        print '%-18s %7.3f %7.3f' % (
+            name_version, compile_time / norm_time, render_time / norm_time)
 
 
 if __name__ == '__main__':

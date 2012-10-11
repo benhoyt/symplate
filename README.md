@@ -82,16 +82,16 @@ some of the fast or popular template languages.
 
 Times are normalized to the HandCoded render time:
 
-    engine      compile  render
-    ---------------------------
-    HandCoded     0.001   1.000
-    Symplate     12.622   1.153
-    Wheezy       30.158   1.387
-    Bottle       10.409   2.595
-    Mako         61.721   3.899
-    Jinja2       68.233   5.612
-    Cheetah     123.779   6.118
-    Django        7.924  22.899
+    engine             compile  render
+    ----------------------------------
+    HandCoded            0.001   1.000
+    Symplate 0.9        11.900   1.138
+    Wheezy              29.604   1.349
+    Bottle 0.11.rc1     10.296   2.575
+    Mako 0.7.2          60.189   3.876
+    Jinja2 2.6          68.179   5.581
+    Cheetah 2.4.4      121.454   5.919
+    Django 1.3.3         7.698  20.506
 
 
 Basic usage
