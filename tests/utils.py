@@ -28,7 +28,7 @@ class TestCase(unittest.TestCase):
             cls._class_set_up = True
             TestCase._template_num = 0
 
-    def _write_template(self, _renderer, name, template):
+    def _write_template(self, _renderer, name, template, adjust_mtime):
         if isinstance(template, unicode):
             template = template.encode('utf-8')
         filename = os.path.join(_renderer.template_dir, name + _renderer.extension)
@@ -37,12 +37,18 @@ class TestCase(unittest.TestCase):
             os.makedirs(dirname)
         with open(filename, 'w') as f:
             f.write(template)
+
+        if adjust_mtime:
+            st = os.stat(filename)
+            os.utime(filename, (st.st_atime, st.st_mtime + adjust_mtime))
+
         return filename
 
     def render(self, template, *args, **kwargs):
         """Compile and render template source string with given args."""
         _renderer = kwargs.pop('_renderer', renderer)
         _increment = kwargs.pop('_increment', 1)
+        _adjust_mtime = kwargs.pop('_adjust_mtime', 0)
 
         TestCase._template_num += _increment
         try:
@@ -56,7 +62,7 @@ class TestCase(unittest.TestCase):
             name = ''
         name = '%s/test%s_%d' % (self.__class__.__name__,
                                 name, TestCase._template_num)
-        self._write_template(_renderer, name, template)
+        self._write_template(_renderer, name, template, _adjust_mtime)
 
         return _renderer.render(name, *args, **kwargs)
 
