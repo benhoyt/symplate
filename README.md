@@ -267,8 +267,7 @@ to get what you want if this doesn't suit. The rules are:
 
 * Eat spaces and tabs at the beginning of `{% ... %}` lines
 * Eat newline character immediately after a closing `%}`, except when the code
-  block is "inline" (that is, when there are non-whitespace characters before
-  the `{%` on the line)
+  block is "inline"
 * All other whitespace Symplate leaves alone
 
 An example which shows all this in action is:
@@ -277,7 +276,7 @@ An example which shows all this in action is:
     <ul>
     {% for i in range(10): %}
         {% if i % 2 == 0: %}
-        <li>{% if i == 0: %}zero{% else: %}{{ str(i) }}{% end if %}</li>
+        <li>{% if i == 0: %}zero{% else: %}{{ i }}{% end if %}</li>
         {% end if %}
     {% end for %}
     </ul>

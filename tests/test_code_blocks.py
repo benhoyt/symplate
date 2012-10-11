@@ -68,18 +68,21 @@ class TestCodeBlocks(utils.TestCase):
     def test_normal_block_whitespace(self):
         self.assertEqual(self.render("""
 {% template %}
-{% if 1: %}
+    {% if 1: %}
 true
-{% end if %}
+    {% end if %}
 
 foo"""), 'true\n\nfoo')
 
     def test_inline_block_whitespace(self):
+
         self.assertEqual(self.render("""
 {% template %}
 {% if 1: %}true{% end if %}
+    A{% if 1: %}true{% end if %}B
+    {% if 1: %}true{% end if %}
 
-foo"""), 'true\n\nfoo')
+foo"""), 'true\n    AtrueB\ntrue\n\nfoo')
 
     def test_else_oneline(self):
         t = '{% template x %}{% if x: %}t{% else: %}f{% end if %}'

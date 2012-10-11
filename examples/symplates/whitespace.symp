@@ -2,7 +2,7 @@
 <ul>
 {% for i in range(10): %}
     {% if i % 2 == 0: %}
-    <li>{% if i == 0: %}zero{% else: %}{{ str(i) }}{% end if %}</li>
+    <li>{% if i == 0: %}zero{% else: %}{{ i }}{% end if %}</li>
     {% end if %}
 {% end for %}
 </ul>
