@@ -59,8 +59,27 @@ class TestCodeBlocks(utils.TestCase):
 
     def test_surrounding_whitespace(self):
         self.assertEqual(self.render('{% template %}a{% #comment %}b'), 'ab')
-        self.assertEqual(self.render('{% template %}a{% #comment %}\nb'), 'ab')
-        self.assertEqual(self.render('{% template %}a{% #comment %}\n\nb'), 'a\nb')
+        self.assertEqual(self.render('{% template %}a{% #comment %}\nb'), 'a\nb')
+        self.assertEqual(self.render('{% template %}a{% #comment %}\n\nb'), 'a\n\nb')
+        self.assertEqual(self.render('{% template %}a\n{% #comment %}b'), 'a\nb')
+        self.assertEqual(self.render('{% template %}a\n{% #comment %}\nb'), 'a\nb')
+        self.assertEqual(self.render('{% template %}a\n{% #comment %}\n\nb'), 'a\n\nb')
+
+    def test_normal_block_whitespace(self):
+        self.assertEqual(self.render("""
+{% template %}
+{% if 1: %}
+true
+{% end if %}
+
+foo"""), 'true\n\nfoo')
+
+    def test_inline_block_whitespace(self):
+        self.assertEqual(self.render("""
+{% template %}
+{% if 1: %}true{% end if %}
+
+foo"""), 'true\n\nfoo')
 
     def test_else_oneline(self):
         t = '{% template x %}{% if x: %}t{% else: %}f{% end if %}'

@@ -169,6 +169,7 @@ class Renderer(object):
         in_template = False
         got_template = False
         line_num = 1
+        prev_text = '\n'
         pieces = template.split('{%')
         for i, piece in enumerate(pieces):
             if i == 0:
@@ -237,9 +238,11 @@ def _render(_renderer, %s):
             if eol_pos >= 0 and text[eol_pos + 1:].isspace():
                 text = text.rstrip(' \t')
             # eat EOL immediately after a closing %}
-            if text.startswith('\n'):
+            if (text.startswith('\n') and
+                    prev_text.rstrip(' \t').endswith('\n')):
                 text = text[1:]
                 line_num += 1
+            prev_text = code_text[1]
 
             # ignore whitespace before {% template ... %}, if inside template
             # then write output
