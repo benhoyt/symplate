@@ -336,20 +336,26 @@ Filters
 ### The default filter
 
 The default filter used by `{{ ... }}` output expressions is `html_filter`,
-which escapes HTML/XML special characters in the given string. It escapes `&`,
-`<`, `>`, `'`, and `"`, so it's good for both HTML content as well as
-attribute values.
+which converts its argument to unicode and then escapes HTML/XML special
+characters. It escapes `&`, `<`, `>`, `'`, and `"`, so it's good for both HTML
+content as well as attribute values.
+
+`html_filter` converts byte strings to unicode using UTF-8. It converts other
+non-string objects simply using `unicode(obj)`, except for `None`, for which
+it returns an empty string (almost always what you want).
 
 For example, `render('test', thing='A & B', title="Symplate's simple")` on
 this template:
 
     Thing is <b>{{ thing }}</b>.
     <img src='logo.png' title='{{ title }}'>
+    {{ 1234 }}{{ None }}{{ '\xe2\x80\x99' }}
 
-Would produce the output:
+Would produce the following output:
 
     Thing is <b>A &amp; B</b>.
     <img src='logo.png' title='Symplate&#39;s simple'>
+    1234’
 
 ### Outputting raw strings
 
@@ -372,6 +378,9 @@ function, so you can pass other arguments to custom filters. For example:
 If you need to change back to the default filter (`html_filter`), just say:
 
     {% filt = symplate.html_filter %}
+
+The other handy built-in filter is `symplate.text_filter`, which handles
+objects the same way as `html_filter`, but doesn't HTML-escape the result.
 
 ### Overriding the default filter
 
@@ -488,7 +497,7 @@ always encoded in UTF-8, and internally Symplate builds the template as
 unicode.
 
 `render()` always returns a unicode string, and it's best to pass unicode
-strings as arguments to `render()`, but you can also pass ASCII byte strings,
+strings as arguments to `render()`, but you can also pass UTF-8 byte strings,
 as the default filter `html_filter` will handle both.
 
 

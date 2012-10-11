@@ -15,23 +15,37 @@ import sys
 __version__ = '0.9'
 
 
-def html_filter(s):
-    """Escape special HTML/XML characters in given ASCII or unicode string
-    (the default output filter in templates).
+def html_filter(obj):
+    """Convert object to unicode and then escape special HTML/XML chars. If
+    obj is None, return empty string. If obj is a byte string, convert from
+    UTF-8 first.
     """
-    # slight performance boost by feeding correct string type into replace()
-    if isinstance(s, unicode):
-        return (s.replace(u'&', u'&amp;')
-                 .replace(u'<', u'&lt;')
-                 .replace(u'>', u'&gt;')
-                 .replace(u"'", u'&#39;')
-                 .replace(u'"', u'&#34;'))
-    else:
-        return (s.replace('&', '&amp;')
-                 .replace('<', '&lt;')
-                 .replace('>', '&gt;')
-                 .replace("'", '&#39;')
-                 .replace('"', '&#34;'))
+    if not isinstance(obj, unicode):
+        if obj is None:
+            return u''
+        if isinstance(obj, str):
+            obj = unicode(obj, 'utf-8')
+        else:
+            obj = unicode(obj)
+    return (obj.replace(u'&', u'&amp;')
+               .replace(u'<', u'&lt;')
+               .replace(u'>', u'&gt;')
+               .replace(u"'", u'&#39;')
+               .replace(u'"', u'&#34;'))
+
+
+def text_filter(obj):
+    """Convert object to unicode but don't escape special chars. None/str
+    handling is the same as for html_filter.
+    """
+    if not isinstance(obj, unicode):
+        if obj is None:
+            return u''
+        if isinstance(obj, str):
+            obj = unicode(obj, 'utf-8')
+        else:
+            obj = unicode(obj)
+    return obj
 
 
 class Error(Exception):
