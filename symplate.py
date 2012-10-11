@@ -237,7 +237,7 @@ def _render(_renderer, %s):
             eol_pos = text.rfind('\n')
             if eol_pos >= 0 and text[eol_pos + 1:].isspace():
                 text = text.rstrip(' \t')
-            # eat EOL immediately after a closing %}
+            # eat EOL immediately after a closing %}, unless inline code block
             if (text.startswith('\n') and
                     prev_text.rstrip(' \t').endswith('\n')):
                 text = text[1:]

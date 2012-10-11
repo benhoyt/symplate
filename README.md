@@ -7,7 +7,7 @@ Symplate is a very simple and very fast Python template language.
 * [FAQ](#faq) -- [Who](#who-uses-symplate) | [Why](#why-use-symplate) | [Performance](#isnt-worrying-about-performance-silly)
 * [Basic usage](#basic-usage)
 * [Compiled Python output](#compiled-python-output)
-* [Syntax](#syntax) -- [Directives](#directives) | [Comments](#comments) | [Literals](#outputting-a-literal----or-)
+* [Syntax](#syntax) -- [Directives](#directives) | [Whitespace](#whitespace-handling) | [Comments](#comments) | [Literals](#outputting-a-literal----or-)
 * [Filters](#filters) -- [Default](#the-default-filter) | [Raw](#outputting-raw-strings) | [Setting](#setting-the-filter) | [Overriding](#overriding-the-default-filter)
 * [Including sub-templates](#including-sub-templates)
 * [Customizing Renderer](#customizing-renderer)
@@ -258,6 +258,40 @@ A `:` (colon) at the end of a code block starts a code indentation block, just
 like in Python. However, there's a special case for the `elif`, `else`,
 `except` and `finally` keywords -- they dedent for the line the keyword is on,
 and then indent again (just like you would when writing Python).
+
+### Whitespace handling
+
+Symplate has some very simple rules for whitespace handling. The idea is to do
+what's normal for the common case, but you can always insert extra whitespace
+to get what you want if this doesn't suit. The rules are:
+
+* Eat spaces and tabs at the beginning of `{% ... %}` lines
+* Eat newline character immediately after a closing `%}`, except when the code
+  block is "inline" (that is, when there are non-whitespace characters before
+  the `{%` on the line)
+* All other whitespace Symplate leaves alone
+
+An example which shows all this in action is:
+
+    {% template %}
+    <ul>
+    {% for i in range(10): %}
+        {% if i % 2 == 0: %}
+        <li>{% if i == 0: %}zero{% else: %}{{ str(i) }}{% end if %}</li>
+        {% end if %}
+    {% end for %}
+    </ul>
+
+The above template produces the following output.
+
+    <ul>
+        <li>zero</li>
+        <li>2</li>
+        <li>4</li>
+        <li>6</li>
+        <li>8</li>
+    </ul>
+
 
 ### Comments
 
