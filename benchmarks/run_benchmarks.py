@@ -75,7 +75,11 @@ except ImportError:
     warnings.warn("Can't import Cheetah, is it in your PYTHONPATH?")
     cheetah = None
 if cheetah:
-    cheetah.checkFileMtime(False)
+    try:
+        cheetah.checkFileMtime(False)
+    except AttributeError:
+        # Old Cheetah versions don't have checkFileMtime
+        pass
 
     class Cheetah(TemplateLanguage):
         def __init__(self):
@@ -151,7 +155,7 @@ if mako:
 
 try:
     import wheezy.template
-except OSError:
+except ImportError:
     warnings.warn("Can't import wheezy.template, is it in your PYTHONPATH?")
     wheezy = None
 if wheezy:
