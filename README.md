@@ -454,6 +454,8 @@ initializer as follows:
   directory of your Symplate source files.
 * **output_dir** is the directory the compiled Python template files will go
   into. The default is `symplouts` at the same level as your `template_dir`.
+  This directory must be writeable by the Python process calling `compile()`
+  or `render()` (if auto_compile is on).
 * **extension** is the file extension for templates. The default is `'.symp'`.
   Set this to `''` if you want to specify the file extension explicitly when
   calling render.
