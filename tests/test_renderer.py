@@ -36,6 +36,10 @@ class TestRenderer(utils.TestCase):
         self.assertEquals(self.render('{% template %}cmf2', _renderer=renderer, _increment=0, _adjust_mtime=5), 'cmf2')
         self.assertEquals(self.render('{% template %}cmf3', _renderer=renderer, _increment=0, _adjust_mtime=5), 'cmf2')
 
+    def test_auto_compile_false(self):
+        renderer = utils.Renderer(auto_compile=False)
+        self.assertRaises(ImportError, self.render, '{% template %}foo', _renderer=renderer)
+
     def test_modify_path(self):
         saved_path = list(sys.path)
         try:

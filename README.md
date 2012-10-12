@@ -448,23 +448,27 @@ To customize rendering settings, simply pass arguments to the `Renderer()`
 initializer as follows:
 
 * **template_dir** is the only required argument -- it specifies the root
-directory of your Symplate source files.
+  directory of your Symplate source files.
 * **output_dir** is the directory the compiled Python template files will go
-into. The default is `symplouts` at the same level as your `template_dir`.
+  into. The default is `symplouts` at the same level as your `template_dir`.
 * **extension** is the file extension for templates. The default is `'.symp'`.
-Set this to `''` if you want to specify the file extension explicitly when
-calling render.
+  Set this to `''` if you want to specify the file extension explicitly when
+  calling render.
 * **check_mtimes** is off by default. Set to True to tell Symplate to check
-the template files' modify times on render, which is slower and usually only
-used for debugging.
+  the template files' modify times on render, which is slower and usually only
+  used for debugging.
+* **auto_compile**, which is on by default, means Symplate will automatically
+  compile templates to .py files when you call `render()`. Set to False if
+  you've deployed the compiled .py files along with your templates, or if
+  you've already called `compile_all()` manually.
 * **modify_path** is on by default, and means Symplate will put
-`output_dir/..` first on `sys.path` so it can import compiled templates. Set
-to False if you want to manage this manually.
+  `output_dir/..` first on `sys.path` so it can import compiled templates. Set
+  to False if you want to manage this manually.
 * **preamble** defaults to empty string, and specifies extra code to include
-at the top of all compiled template. Useful for imports you use in many
-templates.
+  at the top of all compiled template. Useful for imports you use in many
+  templates.
 * **default_filter** defaults to `'symplate.html_filter'`, and is used to
-[override the default filter](#overriding-the-default-filter).
+  [override the default filter](#overriding-the-default-filter).
 
 The public methods of `Renderer` instances are `render`, `compile`, and
 `compile_all`, though often you'll only need `render`. You use these functions

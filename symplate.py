@@ -75,8 +75,8 @@ class Renderer(object):
     """
 
     def __init__(self, template_dir, output_dir=None, extension='.symp',
-                 check_mtimes=False, modify_path=True, preamble='',
-                 default_filter='symplate.html_filter'):
+                 check_mtimes=False, auto_compile=True, modify_path=True,
+                 preamble='', default_filter='symplate.html_filter'):
         """Initialize a Renderer instance. See README.md for more info."""
         self.template_dir = os.path.abspath(template_dir)
         if output_dir is None:
@@ -85,6 +85,7 @@ class Renderer(object):
         self.output_dir = output_dir
         self.extension = extension
         self.check_mtimes = check_mtimes
+        self.auto_compile = auto_compile
         self.preamble = preamble
         self.default_filter = default_filter
 
@@ -363,16 +364,17 @@ def _render(_renderer, %s):
         """Import (or compile and import) named template and return module."""
         names = self._get_filenames(name)
 
-        # compile the template source to .py if it has changed
-        try:
-            py_mtime = os.path.getmtime(names['py'])
-        except OSError:
-            py_mtime = 0
-        if os.path.getmtime(names['symplate']) > py_mtime:
-            self.compile(name)
-            # .py changed, ensure module is reloaded when imported below
-            if names['module'] in sys.modules:
-                sys.modules.pop(names['module'])
+        if self.auto_compile:
+            # compile the template source to .py if it has changed
+            try:
+                py_mtime = os.path.getmtime(names['py'])
+            except OSError:
+                py_mtime = 0
+            if os.path.getmtime(names['symplate']) > py_mtime:
+                self.compile(name)
+                # .py changed, ensure module is reloaded when imported below
+                if names['module'] in sys.modules:
+                    sys.modules.pop(names['module'])
 
         # try to import the compiled template; if it doesn't exist (it's never
         # been compiled), compile it and then re-import
@@ -380,6 +382,8 @@ def _render(_renderer, %s):
             module = __import__(names['module'], globals(), locals(),
                                 [names['import']])
         except ImportError:
+            if not self.auto_compile:
+                raise
             self.compile(name)
             module = __import__(names['module'], globals(), locals(),
                                 [names['import']])
