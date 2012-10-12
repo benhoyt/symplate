@@ -298,12 +298,12 @@ def _render(_renderer, %s):
 
     def _make_output_dir(self, output_dir):
         """Create an output directories along with its __init__.py."""
-        if os.path.exists(output_dir):
-            return
-        os.mkdir(output_dir)
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
         init_py_name = os.path.join(output_dir, '__init__.py')
-        with open(init_py_name, 'w') as f:
-            f.write('')
+        if not os.path.exists(init_py_name):
+            with open(init_py_name, 'w') as f:
+                f.write('')
 
     def compile(self, name, verbose=False):
         """Compile named template to .py in output directory. Print what we're
