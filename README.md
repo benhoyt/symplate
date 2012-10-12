@@ -93,6 +93,9 @@ Times are normalized to the HandCoded render time:
     Cheetah 2.4.4      121.454   5.919
     Django 1.3.3         7.698  20.506
 
+I ran these benchmarks on my Intel Core i5-2450 on Windows 7, running CPython
+2.7.3 64-bit.
+
 
 Basic usage
 -----------
