@@ -23,7 +23,6 @@ class TestOutputExpressions(utils.TestCase):
 
     def test_contains_code_block(self):
         self.assertTemplateError(2, 'foo', self.render, "{% template %}\n{{ foo {% }}")
-        # TODO: it's quirky that this shows line 1: {% template %} ...
         self.assertTemplateError(1, 'template', self.render, "{% template %}\n{{ foo %} }}")
 
     def test_python_name_error(self):

@@ -84,14 +84,14 @@ Times are normalized to the HandCoded render time:
 
     engine             compile  render
     ----------------------------------
-    HandCoded            0.001   1.000
-    Symplate 0.9        11.900   1.138
-    Wheezy              29.604   1.349
-    Bottle 0.11.rc1     10.296   2.575
-    Mako 0.7.2          60.189   3.876
-    Jinja2 2.6          68.179   5.581
-    Cheetah 2.4.4      121.454   5.919
-    Django 1.3.3         7.698  20.506
+    HandCoded            0.002   1.000
+    Symplate 1.0        13.471   1.178
+    Wheezy              30.173   1.398
+    Bottle 0.11.rc1     10.556   2.664
+    Mako 0.7.2          62.982   3.886
+    Jinja2 2.6          68.146   5.713
+    Cheetah 2.4.4      124.748   5.986
+    Django 1.3.3         7.919  21.296
 
 I ran these benchmarks on my Intel Core i5-2450 on Windows 7, running CPython
 2.7.3 64-bit.
