@@ -1,6 +1,8 @@
 Symplate, the Simple pYthon teMPLATE renderer
 =============================================
 
+**NOTE: I haven't maintained Symplate for years, and don't recommend its use anymore. Use the ubiquitous [Jinja2](http://jinja.pocoo.org/docs/2.10/) or the solid and fast [Mako](https://www.makotemplates.org/) instead.**
+
 Symplate is a very simple and very fast Python template language.
 
 * [Background](#background)
